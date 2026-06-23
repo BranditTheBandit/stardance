@@ -110,6 +110,7 @@
               <div class="bonus-stardust__field">
                 <%= number_field_tag :bonus_stardust, @ship.bonus_stardust,
                       step: 0.25, min: 0, placeholder: "0.0",
+                      autocomplete: "off",
                       class: "bonus-stardust__input",
                       id: "bonus-stardust-input" %>
                 <%= submit_tag "Set Bonus", class: "action-btn action-btn--small action-btn--primary" %>
