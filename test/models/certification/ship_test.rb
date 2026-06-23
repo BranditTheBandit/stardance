@@ -5,6 +5,7 @@
 # Table name: certification_ship_reviews
 #
 #  id               :bigint           not null, primary key
+#  bonus_stardust   :float
 #  claim_expires_at :datetime
 #  claimed_at       :datetime
 #  decided_at       :datetime
@@ -85,5 +86,21 @@ class Certification::ShipTest < ActiveSupport::TestCase
     assert_equal 6, history[:recent].size
     assert_equal reviews.last.id, history[:recent].first.id
     assert history[:recent].first.project_with_deleted.deleted?
+  end
+
+  test "bonus_stardust is added on top of base bounty without multiplier" do
+    review = @project.ship_reviews.create!(status: :pending, reviewer: @reviewer)
+    review.update!(bonus_stardust: 2.0, status: :approved)
+
+    base_with_multiplier = Certification::Ship::REVIEW_BOUNTY * Certification::Ship.multiplier_for_rank(1)
+    assert_equal base_with_multiplier + 2.0, review.stardust_earned
+  end
+
+  test "stardust_earned excludes bonus when bonus_stardust is nil" do
+    review = @project.ship_reviews.create!(status: :pending, reviewer: @reviewer)
+    review.update!(bonus_stardust: nil, status: :approved)
+
+    base_with_multiplier = Certification::Ship::REVIEW_BOUNTY * Certification::Ship.multiplier_for_rank(1)
+    assert_equal base_with_multiplier, review.stardust_earned
   end
 end

@@ -1,6 +1,6 @@
 class Admin::Certification::ShipsController < Admin::Certification::ApplicationController
   before_action :release_other_claims, only: [ :next ]
-  before_action :set_ship, only: [ :show, :update, :set_project_type ]
+  before_action :set_ship, only: [ :show, :update, :set_project_type, :set_bonus_stardust ]
   before_action :set_submitter_context, only: [ :show, :update ]
   before_action :set_body_class, only: [ :index, :show, :update, :logs ]
 
@@ -84,6 +84,22 @@ class Admin::Certification::ShipsController < Admin::Certification::ApplicationC
     else
       redirect_to admin_certification_ship_path(@ship), alert: "Invalid project type."
     end
+  end
+
+  def set_bonus_stardust
+    authorize @ship
+    value = params[:bonus_stardust].presence
+    @ship.bonus_stardust = value.present? ? value.to_f : nil
+
+    # If the ship already has a verdict, recalculate stardust_earned to
+    # include the updated bonus.
+    if @ship.stardust_earned.present? && !@ship.pending?
+      base = @ship.stardust_earned - (@ship.bonus_stardust_was || 0)
+      @ship.stardust_earned = base + (@ship.bonus_stardust || 0)
+    end
+
+    @ship.save!
+    redirect_to admin_certification_ship_path(@ship), notice: "Bonus stardust updated."
   end
 
   def update

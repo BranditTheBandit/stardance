@@ -3,6 +3,7 @@
 # Table name: certification_ship_reviews
 #
 #  id               :bigint           not null, primary key
+#  bonus_stardust   :float
 #  claim_expires_at :datetime
 #  claimed_at       :datetime
 #  decided_at       :datetime
@@ -367,7 +368,7 @@ module Certification
                                     .count
       rank = Certification::Ship.rank_for_reviewer_with_count(reviewer_id, my_count + 1, now: now)
       multiplier = Certification::Ship.multiplier_for_rank(rank)
-      self.stardust_earned = REVIEW_BOUNTY * multiplier
+      self.stardust_earned = (REVIEW_BOUNTY * multiplier) + (bonus_stardust || 0)
     end
 
     def stamp_claimed_at

@@ -352,6 +352,77 @@
   }
 }
 
+.bonus-stardust {
+  border-color: rgba(255, 229, 100, 0.25) !important;
+  background: rgba(255, 229, 100, 0.04) !important;
+
+  &__current {
+    margin: 0 0 var(--space-s);
+    font-size: 0.95rem;
+    color: var(--color-brand-yellow);
+    font-weight: 600;
+
+    strong {
+      font-weight: 800;
+    }
+  }
+
+  &__form {
+    margin-bottom: var(--space-xs);
+  }
+
+  &__field {
+    display: flex;
+    gap: var(--space-xs);
+    align-items: center;
+  }
+
+  &__input {
+    flex: 1;
+    padding: var(--space-xs) var(--space-s);
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-space-text);
+    background: var(--color-space-surface, rgba(255, 255, 255, 0.04));
+    border: 1px solid rgba(255, 229, 100, 0.3);
+    border-radius: 8px;
+    appearance: textfield;
+
+    &:focus-visible {
+      outline: 2px solid var(--color-brand-yellow);
+      outline-offset: 1px;
+    }
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
+
+
+  &__breakdown {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-s);
+    padding-top: var(--space-s);
+    border-top: 1px solid rgba(255, 229, 100, 0.15);
+    font-size: 0.85rem;
+  }
+
+  &__breakdown-label {
+    color: var(--color-space-text-muted, rgba(255, 255, 255, 0.5));
+  }
+
+  &__breakdown-value {
+    font-weight: 700;
+    color: var(--color-brand-yellow);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
 @keyframes ship-review-pop {
   0% {
     transform: scale(1);
