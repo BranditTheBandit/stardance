@@ -88,18 +88,10 @@ class Admin::Certification::ShipsController < Admin::Certification::ApplicationC
 
   def set_bonus_stardust
     authorize @ship
-    value = params[:bonus_stardust].presence
-    @ship.bonus_stardust = value.present? ? value.to_f : nil
-
-    # If the ship already has a verdict, recalculate stardust_earned to
-    # include the updated bonus.
-    if @ship.stardust_earned.present? && !@ship.pending?
-      base = @ship.stardust_earned - (@ship.bonus_stardust_was || 0)
-      @ship.stardust_earned = base + (@ship.bonus_stardust || 0)
-    end
-
-    @ship.save!
+    @ship.update_bonus_stardust!(params[:bonus_stardust].presence)
     redirect_to admin_certification_ship_path(@ship), notice: "Bonus stardust updated."
+  rescue ArgumentError, ActiveRecord::RecordInvalid => e
+    redirect_to admin_certification_ship_path(@ship), alert: "Invalid bonus stardust: #{e.message}"
   end
 
   def update

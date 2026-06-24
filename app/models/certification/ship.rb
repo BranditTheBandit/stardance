@@ -97,6 +97,9 @@ module Certification
     validates :feedback, length: { maximum: 10_000 }, allow_blank: true
     validates :verdict_video,
               content_type: { in: ACCEPTED_VIDEO_TYPES, spoofing_protection: true }
+    validates :bonus_stardust,
+              numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 },
+              allow_nil: true
 
     scope :for_reviewer, ->(user) {
       joins(:project)
@@ -356,6 +359,22 @@ module Certification
     # Timeline cards for decided reviews sort by when the verdict landed.
     def decided_on
       decided_at || updated_at
+    end
+
+    
+    def update_bonus_stardust!(value)
+      self.bonus_stardust = if value.present?
+        parsed = Float(value)
+        raise ArgumentError, "bonus_stardust must be >= 0" if parsed.negative?
+        parsed
+      end
+
+      if stardust_earned.present? && !pending?
+        base = stardust_earned - (bonus_stardust_was || 0)
+        self.stardust_earned = base + (bonus_stardust || 0)
+      end
+
+      save!
     end
 
     private
