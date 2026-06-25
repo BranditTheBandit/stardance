@@ -788,6 +788,7 @@ Rails.application.routes.draw do
         end
         patch :set_project_type, on: :member
         patch :set_bonus_stardust, on: :member
+        post :report_fraud, on: :member
         scope module: :ships do
           resource :claim, only: [ :create, :destroy ]
         end

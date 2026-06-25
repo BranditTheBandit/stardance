@@ -15,6 +15,8 @@ class Admin::Certification::ShipPolicy < ApplicationPolicy
 
   def set_bonus_stardust? = user&.admin?
 
+  def report_fraud? = user&.can_review?
+
   class Scope < ApplicationPolicy::Scope
     def resolve
       return scope.none unless user&.can_review?
