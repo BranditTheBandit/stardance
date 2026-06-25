@@ -362,17 +362,6 @@ module Certification
     end
 
 
-    def update_bonus_stardust!(value)
-      self.bonus_stardust = value
-
-      if stardust_earned.present? && !pending?
-        base = stardust_earned - (bonus_stardust_was || 0)
-        self.stardust_earned = base + (bonus_stardust || 0)
-      end
-
-      save!
-    end
-
     private
 
     def assign_stardust_earned
