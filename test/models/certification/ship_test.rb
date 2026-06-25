@@ -87,5 +87,4 @@ class Certification::ShipTest < ActiveSupport::TestCase
     assert_equal reviews.last.id, history[:recent].first.id
     assert history[:recent].first.project_with_deleted.deleted?
   end
-
 end
