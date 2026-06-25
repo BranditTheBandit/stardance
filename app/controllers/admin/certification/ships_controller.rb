@@ -115,7 +115,7 @@ class Admin::Certification::ShipsController < Admin::Certification::ApplicationC
     authorize @ship
     @ship.update_bonus_stardust!(params[:bonus_stardust].presence)
     redirect_to admin_certification_ship_path(@ship), notice: "Bonus stardust updated."
-  rescue ArgumentError, ActiveRecord::RecordInvalid => e
+  rescue ActiveRecord::RecordInvalid => e
     redirect_to admin_certification_ship_path(@ship), alert: "Invalid bonus stardust: #{e.message}"
   end
 

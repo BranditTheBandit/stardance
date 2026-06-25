@@ -361,13 +361,9 @@ module Certification
       decided_at || updated_at
     end
 
-    
+
     def update_bonus_stardust!(value)
-      self.bonus_stardust = if value.present?
-        parsed = Float(value)
-        raise ArgumentError, "bonus_stardust must be >= 0" if parsed.negative?
-        parsed
-      end
+      self.bonus_stardust = value
 
       if stardust_earned.present? && !pending?
         base = stardust_earned - (bonus_stardust_was || 0)
