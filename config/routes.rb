@@ -434,6 +434,10 @@ Rails.application.routes.draw do
 
   # Static OG images
   get "og/:page", to: "og_images#show", as: :og_image, defaults: { format: :png }
+
+  # Shareable purchase artifact (public, keyed by a signed id — see ArtifactsController)
+  get "artifacts/:id", to: "artifacts#show", as: :artifact
+
   # Landing
   root "landing#index"
   get "landing/signup_count", to: "landing#signup_count", as: :landing_signup_count

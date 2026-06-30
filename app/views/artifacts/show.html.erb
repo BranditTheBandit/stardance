@@ -1,0 +1,44 @@
+<% project = @featured_project %>
+<% content_for :title, "#{@buyer.display_name} earned #{@item.name} on Stardance" %>
+<% content_for :og_title, "I earned #{@item.name} on Stardance" %>
+<% content_for :og_description, project ? "Shipped #{project.title}, earned stardust, and redeemed it for #{@item.name} on Stardance." : "Earned stardust building on Stardance and redeemed it for #{@item.name}." %>
+<% content_for :og_image, project_og_image_url(project, format: :png) if project %>
+<% content_for :twitter_card, "summary_large_image" %>
+<% content_for :head do %>
+  <meta name="robots" content="noindex, nofollow">
+<% end %>
+
+<section class="idv-setup-card">
+  <p class="idv-setup-card__eyebrow">Stardance</p>
+  <h2 class="idv-setup-card__title"><%= @buyer.display_name %> earned this</h2>
+
+  <div class="idv-setup-card__body">
+    <% if project %>
+      <p class="idv-setup-card__lede">
+        Earned by shipping <strong><%= project.title %></strong> on Stardance, then redeemed
+        <strong><%= number_with_precision(@stardust_spent, precision: 0) %> stardust</strong>
+        for <strong><%= @item.name %></strong>.
+      </p>
+    <% else %>
+      <p class="idv-setup-card__lede">
+        Earned <strong><%= number_with_precision(@stardust_spent, precision: 0) %> stardust</strong>
+        building on Stardance and redeemed it for <strong><%= @item.name %></strong>.
+      </p>
+    <% end %>
+  </div>
+
+  <%= link_to "Start building on Stardance →", root_url,
+              class: "action-btn action-btn--large action-btn--primary idv-setup-card__cta" %>
+
+  <footer class="idv-setup-card__footer">
+    <p class="idv-setup-card__footer-links">
+      <button type="button" class="idv-setup-card__footer-link"
+              data-controller="copy tooltip"
+              data-copy-text-value="<%= artifact_url(@order.signed_id(purpose: :artifact)) %>"
+              data-tooltip-message-value="Click to copy"
+              data-action="copy#copy">
+        Copy link to share →
+      </button>
+    </p>
+  </footer>
+</section>
