@@ -49,7 +49,7 @@ class DailyRollsController < ApplicationController
         @viewer_rank = @viewer_date_roll.rank
         @viewer_page = ((@viewer_rank - 1) / PAGE_SIZE) + 1
       end
-      @lookout_nudge_origin = lookout_nudge_origin
+      @lookout_banner_origin = lookout_banner_origin
     else
       @anonymous_roll = AnonymousRoll.new(cookies).today
     end
@@ -103,13 +103,14 @@ class DailyRollsController < ApplicationController
   end
 
   # Re-engagement: the daily roll pulls even people who never track time back
-  # here, so signed-in viewers who haven't linked Hackatime get a nudge toward
-  # Lookout. Returns where /auth/hackatime should send them afterward (their most
-  # recent project, so the on-project record flow is one click away), or nil when
-  # the nudge shouldn't show. Kept cheap on purpose — keyed off the identity
-  # association, never a live Hackatime sync, which would add an API call to this
-  # hot path. Broadening to "linked but 0 hours" needs a cached hours signal first.
-  def lookout_nudge_origin
+  # here, so signed-in viewers who haven't linked Hackatime get a banner nudging
+  # them toward Lookout. Returns where /auth/hackatime should send them afterward
+  # (their most recent project, so the on-project record flow is one click away),
+  # or nil when the banner shouldn't show. Kept cheap on purpose — keyed off the
+  # identity association, never a live Hackatime sync, which would add an API call
+  # to this hot path. Broadening to "linked but 0 hours" needs a cached hours
+  # signal first.
+  def lookout_banner_origin
     return unless Flipper.enabled?(:lookout, current_user)
     return if current_user.hackatime_identity.present?
 
