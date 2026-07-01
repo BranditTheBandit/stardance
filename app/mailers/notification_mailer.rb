@@ -7,13 +7,19 @@ class NotificationMailer < ApplicationMailer
     @recipient = @notification.recipient
     @actor     = @notification.actor
     @record    = @notification.record
-    @recommended_items = payout_recommendations
 
-    mail(
-      to:            @recipient.email,
-      subject:       @notification.email_subject,
-      template_name: @notification.template_key
-    )
+    if @notification.loops_transactional_id.present?
+      # Loops-native: the body is a JSON transactional payload and Loops owns the
+      # design + subject (see loops_transactional.text.erb).
+      mail(to: @recipient.email, template_name: "loops_transactional")
+    else
+      @recommended_items = payout_recommendations
+      mail(
+        to:            @recipient.email,
+        subject:       @notification.email_subject,
+        template_name: @notification.template_key
+      )
+    end
   end
 
   private

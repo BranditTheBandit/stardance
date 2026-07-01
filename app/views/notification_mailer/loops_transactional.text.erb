@@ -1,0 +1,5 @@
+<%# Loops transactional payload. Loops' SMTP relay reads this leading JSON object
+    (transactionalId + dataVariables) and renders the email from the matching
+    Loops template; it ignores the plain-text footer the mailer layout appends.
+    Used for any notification whose #loops_transactional_id is present. %>
+<%= { transactionalId: @notification.loops_transactional_id, email: @recipient.email, dataVariables: @notification.email_data_variables }.to_json %>

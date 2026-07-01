@@ -305,6 +305,19 @@ class Notification < ApplicationRecord
     "Stardance notification"
   end
 
+  # Loops transactional template id for this notification's email. When present,
+  # NotificationMailer sends the Loops JSON payload (email_data_variables) instead
+  # of rendering the legacy HTML/text template. nil = keep the legacy template.
+  def loops_transactional_id
+    nil
+  end
+
+  # Data variables handed to the Loops transactional template (see
+  # loops_transactional_id). Ignored unless loops_transactional_id is present.
+  def email_data_variables
+    {}
+  end
+
   def sanitize_slack_mentions(text)
     text.to_s.gsub(SLACK_MENTION_PATTERN, "")
   end
