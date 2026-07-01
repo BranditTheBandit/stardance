@@ -106,6 +106,7 @@
     <% end %>
     <div id="flash-region"><%= render "shared/flash" %></div>
     <%= render Onboarding::GuestBannerComponent.new unless @hide_sidebar %>
+    <%= render "shared/lookout_banner", origin: @lookout_banner_origin if @lookout_banner_origin %>
 <% if @_admin_layout %>
 <div class="admin-content"><%= yield %></div>
 <% else %>

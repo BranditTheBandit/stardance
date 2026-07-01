@@ -1,10 +1,9 @@
-<%# Slim re-engagement banner on /rng. Reuses the .guest-banner styling — the
+<%# Top sticky re-engagement banner. Reuses the .guest-banner styling — the
     yellow bar shown when you don't have a Hack Club account (see
-    components/_onboarding.scss) — so it matches the existing banner exactly.
-    The daily roll pulls back even people who never track time, so it's a good
-    place to catch the "signed in but never logged any hours" crowd and steer
-    them to Lookout. Rendered behind :lookout, only when the viewer hasn't
-    linked Hackatime yet.
+    components/_onboarding.scss) — so it sits at the top of the screen exactly
+    like that banner. Rendered from the application layout when the controller
+    set @lookout_banner_origin (currently only on /rng, for signed-in viewers
+    who are behind :lookout and haven't linked Hackatime yet).
     Locals: origin (required — where /auth/hackatime returns them). %>
 <div class="guest-banner" id="lookout-banner" role="status">
   <p class="guest-banner__copy">
