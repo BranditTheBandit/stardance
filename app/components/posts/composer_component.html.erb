@@ -37,6 +37,14 @@
                           action: class_names("submit->composer#guardSubmit", "paste->composer#paste": show_attachments?) } },
           class: "feed-composer__form",
           local: true do |f| %>
+      <% if pending_lookout_session.present? %>
+        <%# Carried over from a just-finished Lookout recording: link that
+            session to this devlog, and reassure the user we kept their lapse. %>
+        <%= hidden_field_tag "post_devlog[lookout_session_ids][]", pending_lookout_session.id %>
+        <div class="feed-composer__timelapse-note" role="status">
+          Your timelapse (<%= helpers.format_seconds(pending_lookout_session.duration_seconds) %>) is saved and will be attached to this devlog.
+        </div>
+      <% end %>
       <div class="feed-composer__scroll">
         <div class="feed-composer__main" data-markdown-preview-target="writePanel">
           <%= image_tag current_user.avatar, alt: "", class: "feed-composer__avatar" %>

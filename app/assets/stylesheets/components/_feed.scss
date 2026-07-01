@@ -299,6 +299,19 @@
     background: var(--color-brand-salmon);
   }
 
+  // Reassurance banner shown when a just-finished timelapse is being carried
+  // into this devlog (Lookout recording → "Add it to a devlog").
+  &__timelapse-note {
+    margin: 0 0 var(--space-xs);
+    padding: var(--space-xs);
+    border: 1px solid var(--color-brand-mint);
+    border-radius: var(--border-radius);
+    background: var(--color-space-accent-soft);
+    color: var(--color-space-text);
+    font-size: calc(var(--font-size-s) * 1.1);
+    line-height: 1.4;
+  }
+
   &__form {
     display: flex;
     flex-direction: column;
@@ -839,6 +852,23 @@
   &__duration {
     margin: var(--space-xxs) 0 0;
     font-size: calc(var(--font-size-s) * 1.2);
+  }
+
+  &__timelapse {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xxs);
+    margin: var(--space-xxs) 0 0;
+    font-size: calc(var(--font-size-s) * 1.1);
+    color: var(--color-brand-mint);
+  }
+
+  &__timelapse-dot {
+    flex: 0 0 auto;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-brand-mint);
   }
 
   &__body {

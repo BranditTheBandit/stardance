@@ -42,6 +42,7 @@ Rails.application.config.after_initialize do
         ship_event_payouts
         lookout
         payout_recommendations
+        timelapse_devlog
       ].each { |flag| Flipper.add(flag) }
     end
   rescue StandardError => e

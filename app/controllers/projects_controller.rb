@@ -49,6 +49,14 @@ class ProjectsController < ApplicationController
       @composer_devlog = Post::Devlog.new
       @composer_projects = current_user.projects.order(updated_at: :desc)
 
+      # Coming back from a just-finished Lookout recording: pre-link that
+      # session to the devlog the user is about to write, so their timelapse
+      # attaches to the post instead of feeling lost.
+      if Flipper.enabled?(:timelapse_devlog, current_user) && params[:lookout_session_id].present?
+        @pending_lookout_session = @project.lookout_sessions.attachable
+          .find_by(id: params[:lookout_session_id], user: current_user, devlog_id: nil)
+      end
+
       @hackatime_linked = current_user.hackatime_identity.present?
 
       if @hackatime_linked

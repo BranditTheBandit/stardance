@@ -165,8 +165,15 @@
 
     <%# Shown after the time is sent — nudge to actually log it in a devlog. %>
     <div class="lookout-rec__post-prompt" data-lookout-capture-target="postPrompt" hidden>
-      <%= link_to "Post a Devlog", project_path(@project), class: "lookout-rec__post-btn" %>
-      <p class="lookout-rec__post-sub">Your time only counts once you do a devlog.</p>
+      <% if Flipper.enabled?(:timelapse_devlog, current_user) %>
+        <%= link_to "Add it to a devlog",
+                    project_path(@project, lookout_session_id: @lookout_session.id, just_recorded: 1),
+                    class: "lookout-rec__post-btn" %>
+        <p class="lookout-rec__post-sub">Saved! We've got your timelapse. Add it to a devlog so your time counts.</p>
+      <% else %>
+        <%= link_to "Post a Devlog", project_path(@project), class: "lookout-rec__post-btn" %>
+        <p class="lookout-rec__post-sub">Your time only counts once you do a devlog.</p>
+      <% end %>
     </div>
 
     <%= link_to "Back to project →", project_path(@project),

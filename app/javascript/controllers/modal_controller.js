@@ -30,6 +30,7 @@ export default class extends Controller {
 
     this.openSettingsModalFromQueryParam();
     this.openIdvModalFromQueryParam();
+    this.openComposerModalFromQueryParam();
   }
 
   disconnect() {
@@ -124,6 +125,28 @@ export default class extends Controller {
     }
 
     params.delete("idv_check");
+    const query = params.toString();
+    const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${
+      window.location.hash
+    }`;
+    window.history.replaceState(window.history.state, "", nextUrl);
+  }
+
+  // Landing on the project page straight from a finished Lookout recording
+  // (?just_recorded=1): pop the devlog composer open so the timelapse can be
+  // attached, then strip the params so a refresh doesn't reopen it.
+  openComposerModalFromQueryParam() {
+    if (!this.element.id.startsWith("composer-modal-")) return;
+
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("just_recorded")) return;
+
+    if (!this.element.open) {
+      this.element.showModal();
+    }
+
+    params.delete("just_recorded");
+    params.delete("lookout_session_id");
     const query = params.toString();
     const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${
       window.location.hash

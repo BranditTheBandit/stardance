@@ -57,6 +57,12 @@
         <p class="feed-post-card__duration"><%= helpers.format_seconds(display_postable.duration_seconds) %> logged</p>
       <% end %>
 
+      <% if devlog? && current_user && Flipper.enabled?(:timelapse_devlog, current_user) && display_postable.lookout_sessions.exists? %>
+        <p class="feed-post-card__timelapse">
+          <span class="feed-post-card__timelapse-dot" aria-hidden="true"></span>Timelapse attached
+        </p>
+      <% end %>
+
       <% if quote_repost? && body.present? %>
         <div class="feed-post-card__body feed-post-card__body--inline markdown-content">
           <%= helpers.md(body, allow_images: false) %>
