@@ -42,7 +42,7 @@
             session to this devlog, and reassure the user we kept their lapse. %>
         <%= hidden_field_tag "post_devlog[lookout_session_ids][]", pending_lookout_session.id %>
         <div class="feed-composer__timelapse-note" role="status">
-          Your timelapse (<%= helpers.format_seconds(pending_lookout_session.duration_seconds) %>) is saved and will be attached to this devlog.
+          Your timelapse<% if pending_lookout_session.duration_seconds.to_i > 0 %> (<%= helpers.format_seconds(pending_lookout_session.duration_seconds) %>)<% end %> is saved and will be attached to this devlog.
         </div>
       <% end %>
       <div class="feed-composer__scroll">

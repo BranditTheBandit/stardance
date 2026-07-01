@@ -134,7 +134,9 @@ export default class extends Controller {
 
   // Landing on the project page straight from a finished Lookout recording
   // (?just_recorded=1): pop the devlog composer open so the timelapse can be
-  // attached, then strip the params so a refresh doesn't reopen it.
+  // attached, then strip just_recorded so a refresh doesn't reopen it.
+  // Keep lookout_session_id: it's what the server reads to render the hidden
+  // attach field, so dropping it would lose the link on a pre-submit refresh.
   openComposerModalFromQueryParam() {
     if (!this.element.id.startsWith("composer-modal-")) return;
 
@@ -146,7 +148,6 @@ export default class extends Controller {
     }
 
     params.delete("just_recorded");
-    params.delete("lookout_session_id");
     const query = params.toString();
     const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${
       window.location.hash

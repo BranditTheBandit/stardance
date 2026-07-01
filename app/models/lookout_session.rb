@@ -45,6 +45,13 @@ class LookoutSession < ApplicationRecord
 
   scope :for_project, ->(project) { where(project: project) }
   scope :attachable, -> { where(status: %w[stopped complete]) }
+  # Sessions that can be linked to a devlog from the recorder → composer flow.
+  # Broader than `attachable` (which requires a finished video): a session still
+  # `compiling` will finalize shortly, and the submit-side attach accepts any
+  # status, so the composer must surface the attach field for it too. Otherwise
+  # a background sync flipping stopped → compiling mid-flow silently drops the
+  # link. Excludes `failed` and the still-recording states.
+  scope :linkable, -> { where(status: %w[stopped compiling complete]) }
   # Sessions that might still advance — everything not yet in a terminal state.
   # SyncPendingLookoutSessionsJob re-polls these so a recording can finalize even
   # when the builder closed the recorder tab before Lookout finished compiling.

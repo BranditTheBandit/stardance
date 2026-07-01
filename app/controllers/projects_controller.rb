@@ -53,7 +53,7 @@ class ProjectsController < ApplicationController
       # session to the devlog the user is about to write, so their timelapse
       # attaches to the post instead of feeling lost.
       if Flipper.enabled?(:timelapse_devlog, current_user) && params[:lookout_session_id].present?
-        @pending_lookout_session = @project.lookout_sessions.attachable
+        @pending_lookout_session = @project.lookout_sessions.linkable
           .find_by(id: params[:lookout_session_id], user: current_user, devlog_id: nil)
       end
 
