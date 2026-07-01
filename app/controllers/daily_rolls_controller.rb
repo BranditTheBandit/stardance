@@ -49,6 +49,7 @@ class DailyRollsController < ApplicationController
         @viewer_rank = @viewer_date_roll.rank
         @viewer_page = ((@viewer_rank - 1) / PAGE_SIZE) + 1
       end
+      @lookout_nudge_origin = lookout_nudge_origin
     else
       @anonymous_roll = AnonymousRoll.new(cookies).today
     end
@@ -99,6 +100,21 @@ class DailyRollsController < ApplicationController
 
     [ turbo_stream.replace("rng-hero", partial: "daily_rolls/hero",
                            locals: { roll: roll, just_rolled: just_rolled, anonymous: true }) ]
+  end
+
+  # Re-engagement: the daily roll pulls even people who never track time back
+  # here, so signed-in viewers who haven't linked Hackatime get a nudge toward
+  # Lookout. Returns where /auth/hackatime should send them afterward (their most
+  # recent project, so the on-project record flow is one click away), or nil when
+  # the nudge shouldn't show. Kept cheap on purpose — keyed off the identity
+  # association, never a live Hackatime sync, which would add an API call to this
+  # hot path. Broadening to "linked but 0 hours" needs a cached hours signal first.
+  def lookout_nudge_origin
+    return unless Flipper.enabled?(:lookout, current_user)
+    return if current_user.hackatime_identity.present?
+
+    recent_project = current_user.projects.order(created_at: :desc).first
+    recent_project ? project_path(recent_project) : rng_path
   end
 
   # rng ships with the week 2 release; until then it 404s for everyone.
