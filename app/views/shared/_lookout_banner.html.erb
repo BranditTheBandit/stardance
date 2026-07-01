@@ -7,9 +7,9 @@
     Locals: origin (required — where /auth/hackatime returns them). %>
 <div class="guest-banner" id="lookout-banner" role="status">
   <p class="guest-banner__copy">
-    your rolls are logged — is your build time? record in your browser with Lookout, no install needed.
+    the easy way to log your build time — just hit record in your browser with Lookout. no install, no editor extension.
   </p>
-  <%= button_to "Link Hackatime & record", "/auth/hackatime",
+  <%= button_to "Log hours with Lookout", "/auth/hackatime",
                 method: :post,
                 params: { origin: origin },
                 class: "guest-banner__cta",
