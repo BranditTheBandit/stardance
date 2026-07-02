@@ -211,6 +211,8 @@
             { name: 'mission_reviewer', disabled: !current_user&.admin? },
             { name: 'helper', disabled: !current_user&.admin? },
             { name: 'shop_manager', disabled: !current_user&.admin? },
+            { name: 'groot', disabled: !current_user&.admin? },
+            { name: 'baby_groot', disabled: !current_user&.admin? },
             { name: 'admin', disabled: !current_user&.super_admin? },
           ]
           promotable_roles = all_roles.reject { |r| @user.has_role?(r[:name]) }
