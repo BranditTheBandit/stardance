@@ -1,4 +1,5 @@
-# Certification namespace for YSWS review system
-# This module contains models for tracking and reviewing project work hours
 module Certification
+  def self.table_name_prefix
+    "certification_"
+  end
 end
