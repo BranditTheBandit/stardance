@@ -19,7 +19,8 @@ module Notifications
       "Notifications::Missions::SubmissionApproved"             => "check-circle",
       "Notifications::Missions::SubmissionRejected"             => "alert-triangle",
       "Notifications::Missions::SubmissionPendingForReviewer"   => "clipboard",
-      "Notifications::ShopOrders::StatusChanged"                => "bag"
+      "Notifications::ShopOrders::StatusChanged"                => "bag",
+      "Notifications::HardwareMovedToOutpost"                   => "alert-triangle"
     }.freeze
 
     attr_reader :notification

@@ -22,6 +22,7 @@ module Notifications
       Notifications::Payouts::ShipEventIssued
       Notifications::Payouts::VoteDeficitBlocked
       Notifications::ShopOrders::StatusChanged
+      Notifications::HardwareMovedToOutpost
     ].freeze
 
     module_function

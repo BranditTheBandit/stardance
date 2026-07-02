@@ -34,6 +34,13 @@ class Projects::LookoutSessionsController < ApplicationController
       started_at: Time.current
     )
 
+    # Hardware projects live on Outpost now — nudge the builder there with an
+    # inbox notification rather than the old on-recorder popup, without blocking
+    # the recording.
+    if @project.hardware? && Flipper.enabled?(:hardware_to_outpost, current_user)
+      Notifications::HardwareMovedToOutpost.notify(recipient: current_user, record: @project)
+    end
+
     render json: session_json(@session), status: :created
   end
 
