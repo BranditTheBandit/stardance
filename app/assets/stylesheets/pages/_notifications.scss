@@ -106,11 +106,9 @@
   &__icon-img {
     width: 28px;
     height: 28px;
-    // The Outpost logo is a wide wordmark; crop to its flame side so the chip
-    // reads as a little colourful badge rather than a squished wordmark.
-    object-fit: cover;
-    object-position: left center;
-    border-radius: 6px;
+    // A square, transparent brand mark (the Outpost flame favicon) — show the
+    // whole thing so nothing gets clipped.
+    object-fit: contain;
     display: block;
   }
 

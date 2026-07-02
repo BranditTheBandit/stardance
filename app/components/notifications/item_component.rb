@@ -25,7 +25,7 @@ module Notifications
     # Types that show a cropped image chip instead of a line-art SVG icon — used
     # to carry a bit of brand colour into the row (e.g. the Outpost flame).
     TYPE_ICON_IMAGES = {
-      "Notifications::HardwareMovedToOutpost" => "outpost.png"
+      "Notifications::HardwareMovedToOutpost" => "outpost-favicon.png"
     }.freeze
 
     attr_reader :notification
