@@ -1,3 +1,30 @@
+# == Schema Information
+#
+# Table name: certification_baby_groots
+#
+#  id                :bigint           not null, primary key
+#  reviewed_at       :datetime
+#  status            :integer          default("pending_all_reviews"), not null
+#  status_changed_at :datetime
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  project_id        :bigint           not null
+#  ship_event_id     :bigint           not null
+#  user_id           :bigint           not null
+#
+# Indexes
+#
+#  index_certification_baby_groots_on_project_id     (project_id)
+#  index_certification_baby_groots_on_ship_event_id  (ship_event_id) UNIQUE
+#  index_certification_baby_groots_on_status         (status)
+#  index_certification_baby_groots_on_user_id        (user_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (project_id => projects.id)
+#  fk_rails_...  (ship_event_id => post_ship_events.id)
+#  fk_rails_...  (user_id => users.id)
+#
 module Certification
   class BabyGroot < ApplicationRecord
     belongs_to :project

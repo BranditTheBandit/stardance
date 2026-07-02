@@ -1,3 +1,25 @@
+# == Schema Information
+#
+# Table name: certification_baby_groot_decisions
+#
+#  id                :bigint           not null, primary key
+#  reviewed_at       :datetime
+#  reviewer_decision :integer
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  baby_groot_id     :bigint           not null
+#  reviewer_id       :bigint           not null
+#
+# Indexes
+#
+#  index_baby_groot_decisions_on_review_and_reviewer        (baby_groot_id,reviewer_id) UNIQUE
+#  index_certification_baby_groot_decisions_on_reviewer_id  (reviewer_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (baby_groot_id => certification_baby_groots.id)
+#  fk_rails_...  (reviewer_id => users.id)
+#
 module Certification
   class BabyGrootDecision < ApplicationRecord
     # 4-point suspicion slider: 0 (not sus) → 3 (sus).

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_30_165531) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_02_181756) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -153,6 +153,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_30_165531) do
     t.index ["creator_id"], name: "index_blazer_queries_on_creator_id"
   end
 
+  create_table "certification_baby_groot_decisions", force: :cascade do |t|
+    t.bigint "baby_groot_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "reviewed_at"
+    t.integer "reviewer_decision"
+    t.bigint "reviewer_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["baby_groot_id", "reviewer_id"], name: "index_baby_groot_decisions_on_review_and_reviewer", unique: true
+    t.index ["reviewer_id"], name: "index_certification_baby_groot_decisions_on_reviewer_id"
+  end
+
+  create_table "certification_baby_groots", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "project_id", null: false
+    t.datetime "reviewed_at"
+    t.bigint "ship_event_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "status_changed_at"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["project_id"], name: "index_certification_baby_groots_on_project_id"
+    t.index ["ship_event_id"], name: "index_certification_baby_groots_on_ship_event_id", unique: true
+    t.index ["status"], name: "index_certification_baby_groots_on_status"
+    t.index ["user_id"], name: "index_certification_baby_groots_on_user_id"
+  end
+
   create_table "certification_devlog_reviews", force: :cascade do |t|
     t.integer "approved_minutes"
     t.datetime "created_at", null: false
@@ -191,6 +217,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_30_165531) do
     t.index ["reviewer_id"], name: "index_certification_funding_requests_on_reviewer_id"
     t.index ["status", "claim_expires_at"], name: "idx_funding_requests_on_status_claim_expires"
     t.index ["user_id"], name: "index_certification_funding_requests_on_user_id"
+  end
+
+  create_table "certification_groots", force: :cascade do |t|
+    t.bigint "baby_groot_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "reviewed_at"
+    t.integer "reviewer_decision"
+    t.integer "reviewer_deduction"
+    t.bigint "reviewer_id", null: false
+    t.string "reviewer_justification"
+    t.datetime "updated_at", null: false
+    t.index ["baby_groot_id"], name: "index_certification_groots_on_baby_groot_id", unique: true
+    t.index ["reviewer_id"], name: "index_certification_groots_on_reviewer_id"
   end
 
   create_table "certification_ship_reviews", force: :cascade do |t|
@@ -1479,11 +1518,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_30_165531) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "certification_baby_groot_decisions", "certification_baby_groots", column: "baby_groot_id"
+  add_foreign_key "certification_baby_groot_decisions", "users", column: "reviewer_id"
+  add_foreign_key "certification_baby_groots", "post_ship_events", column: "ship_event_id"
+  add_foreign_key "certification_baby_groots", "projects"
+  add_foreign_key "certification_baby_groots", "users"
   add_foreign_key "certification_devlog_reviews", "certification_ysws_reviews", column: "ysws_review_id"
   add_foreign_key "certification_devlog_reviews", "post_devlogs"
   add_foreign_key "certification_funding_requests", "projects"
   add_foreign_key "certification_funding_requests", "users"
   add_foreign_key "certification_funding_requests", "users", column: "reviewer_id"
+  add_foreign_key "certification_groots", "certification_baby_groots", column: "baby_groot_id"
+  add_foreign_key "certification_groots", "users", column: "reviewer_id"
   add_foreign_key "certification_ship_reviews", "projects"
   add_foreign_key "certification_ship_reviews", "users", column: "reviewer_id"
   add_foreign_key "certification_ysws_reviews", "certification_ship_reviews", column: "ship_cert_id"
