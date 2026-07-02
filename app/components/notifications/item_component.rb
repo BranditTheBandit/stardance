@@ -19,8 +19,13 @@ module Notifications
       "Notifications::Missions::SubmissionApproved"             => "check-circle",
       "Notifications::Missions::SubmissionRejected"             => "alert-triangle",
       "Notifications::Missions::SubmissionPendingForReviewer"   => "clipboard",
-      "Notifications::ShopOrders::StatusChanged"                => "bag",
-      "Notifications::HardwareMovedToOutpost"                   => "alert-triangle"
+      "Notifications::ShopOrders::StatusChanged"                => "bag"
+    }.freeze
+
+    # Types that show a cropped image chip instead of a line-art SVG icon — used
+    # to carry a bit of brand colour into the row (e.g. the Outpost flame).
+    TYPE_ICON_IMAGES = {
+      "Notifications::HardwareMovedToOutpost" => "outpost.png"
     }.freeze
 
     attr_reader :notification
@@ -58,6 +63,11 @@ module Notifications
     def type_icon_path
       name = TYPE_ICONS[notification.type] || "bell"
       "icons/notifications/#{name}.svg"
+    end
+
+    # An image asset to use as the icon chip instead of an SVG, or nil.
+    def type_icon_image
+      TYPE_ICON_IMAGES[notification.type]
     end
 
     def avatar_actor

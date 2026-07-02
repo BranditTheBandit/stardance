@@ -3,8 +3,12 @@
     (card_data wires the Stimulus controller + click action; links are ignored by
     the controller). Reading is handled by opening the inbox. %>
 <%= tag.li class: li_classes, data: card_data do %>
-  <span class="notifications-item__icon" aria-hidden="true">
-    <%= inline_svg_tag type_icon_path, class: "notifications-item__icon-svg" %>
+  <span class="<%= class_names("notifications-item__icon", "notifications-item__icon--image": type_icon_image) %>" aria-hidden="true">
+    <% if type_icon_image %>
+      <%= image_tag type_icon_image, alt: "", class: "notifications-item__icon-img" %>
+    <% else %>
+      <%= inline_svg_tag type_icon_path, class: "notifications-item__icon-svg" %>
+    <% end %>
   </span>
 
   <span class="notifications-item__main">

@@ -98,6 +98,22 @@
     display: block;
   }
 
+  // Full-colour brand chip (e.g. the Outpost flame) instead of a muted line icon.
+  &__icon--image {
+    opacity: 1;
+  }
+
+  &__icon-img {
+    width: 28px;
+    height: 28px;
+    // The Outpost logo is a wide wordmark; crop to its flame side so the chip
+    // reads as a little colourful badge rather than a squished wordmark.
+    object-fit: cover;
+    object-position: left center;
+    border-radius: 6px;
+    display: block;
+  }
+
   &__main {
     flex: 1 1 auto;
     display: flex;
