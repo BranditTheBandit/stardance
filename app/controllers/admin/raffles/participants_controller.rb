@@ -285,7 +285,7 @@ module Admin
 
         term = "%#{ActiveRecord::Base.sanitize_sql_like(@query)}%"
         participants.left_outer_joins(:user)
-                    .where("users.display_name ILIKE :term OR raffle_participants.code ILIKE :term OR raffle_participants.github_login ILIKE :term", term: term)
+                    .where("users.display_name ILIKE :term OR raffle_participants.code ILIKE :term OR raffle_participants.github_login ILIKE :term OR raffle_participants.github_email ILIKE :term", term: term)
       end
 
       def query_param

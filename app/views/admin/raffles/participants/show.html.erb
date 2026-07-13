@@ -12,6 +12,7 @@
     <li>Signed up: <%= @participant.user.created_at.strftime("%Y-%m-%d %H:%M UTC") %></li>
   <% else %>
     <li>GitHub: <%= @participant.github_login %></li>
+    <li>GitHub email: <code><%= @participant.github_email || "—" %></code></li>
   <% end %>
   <li>Eligible: <%= @participant.eligible? ? "Yes" : "No" %></li>
   <% if @participant.fraud_cleared? %>
