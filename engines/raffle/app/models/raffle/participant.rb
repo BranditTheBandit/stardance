@@ -46,6 +46,7 @@ module Raffle
       participant = find_or_initialize_by(github_uid: uid)
       participant.github_login = login
       participant.github_avatar_url = info&.image
+      participant.github_email = info&.email
       participant.age_group = :adult
       participant.save!
       participant

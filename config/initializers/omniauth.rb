@@ -58,7 +58,7 @@ Rails.application.config.middleware.use OmniAuth::Builder do
       ENV["RAFFLE_GITHUB_CLIENT_ID"] || Rails.application.credentials.dig(:github_raffle, :client_id),
       ENV["RAFFLE_GITHUB_CLIENT_SECRET"] || Rails.application.credentials.dig(:github_raffle, :client_secret),
       {
-        scope: "read:user",
+        scope: "read:user user:email",
         callback_path: "/auth/github/callback"
       }
 end

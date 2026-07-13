@@ -45,6 +45,9 @@
 
   <% if enrolled? %>
     <div class="raffle-dev__addrefs">
+      <span class="raffle-dev__presets-label">GitHub email: <code><%= current_participant.github_email || "(none)" %></code></span>
+    </div>
+    <div class="raffle-dev__addrefs">
       <span class="raffle-dev__presets-label">Add demo referrals (to you)</span>
       <%= form_with url: dev_referrals_path, method: :post, class: "raffle-dev__refform" do %>
         <%= hidden_field_tag :kind, "pending" %>

@@ -26,6 +26,7 @@ module Raffle
       handle = params[:handle].presence&.parameterize(separator: "_")&.first(40) || "dev-adult"
       participant = Raffle::Participant.find_or_create_by!(github_uid: "dev-#{handle}") do |p|
         p.github_login = handle
+        p.github_email = "#{handle}@example.com"
         p.age_group = :adult
       end
       session[:raffle_participant_id] = participant.id
