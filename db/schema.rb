@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_08_183407) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_10_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -859,6 +859,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_183407) do
     t.boolean "eligible", default: true, null: false
     t.boolean "fraud_cleared", default: false, null: false
     t.string "github_avatar_url"
+    t.string "github_email"
     t.string "github_login"
     t.string "github_uid"
     t.bigint "signup_week_id"
