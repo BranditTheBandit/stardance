@@ -1,5 +1,5 @@
 :root {
-  --color-admin: #ff9100;
+  --color-admin: var(--color-brand-orange);
   --color-dev: #52d831;
 }
 
@@ -24,11 +24,17 @@
 }
 
 .admin.tools-do {
-  background-color: color-mix(in srgb, var(--color-admin) 20%, transparent);
   border-color: var(--color-admin);
 }
 
 .dev.tools-do {
   background-color: color-mix(in srgb, var(--color-dev) 20%, transparent);
   border-color: var(--color-dev);
+}
+
+.tools-do--inline {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 4px;
+  border-radius: 4px;
 }

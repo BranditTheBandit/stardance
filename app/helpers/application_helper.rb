@@ -43,10 +43,15 @@ module ApplicationHelper
       data: { controller: "count-up", count_up_target_value: n })
   end
 
-  def admin_tool(&block)
-    if current_user&.admin?
-      content_tag(:div, class: "admin tools-do", &block)
-    end
+  # compact: true renders an inline <span> with no dashed box, for markers
+  # that sit inside a line of text (e.g. a username byline) rather than
+  # wrapping a standalone block of debug content.
+  def admin_tool(compact: false, &block)
+    return unless current_user&.admin? && Flipper.enabled?(:shigimi_eyes, current_user)
+
+    classes = [ "admin", "tools-do" ]
+    classes << "tools-do--inline" if compact
+    content_tag(compact ? :span : :div, class: classes.join(" "), &block)
   end
 
   def sign(num)
