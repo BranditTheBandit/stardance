@@ -73,6 +73,7 @@
               @<%= user.display_name %>
             <% end %>
             <%= helpers.admin_tool(compact: true) do %><%= link_to "🔨", helpers.admin_user_path(user), class: "username-link__admin", "aria-label": "View #{user.display_name} in admin" %><% end %>
+            <%= helpers.admin_tool(compact: true) do %>#<%= user.id %><% end %>
           </div>
         </div>
 

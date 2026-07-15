@@ -46,8 +46,13 @@ module ApplicationHelper
   # compact: true renders an inline <span> with no dashed box, for markers
   # that sit inside a line of text (e.g. a username byline) rather than
   # wrapping a standalone block of debug content.
+  #
+  # Uses real_user rather than current_user while impersonating, so the
+  # admin retains their own debug tooling instead of losing it to whatever
+  # role the impersonated account happens to have.
   def admin_tool(compact: false, extra_class: nil, &block)
-    return unless current_user&.admin? && Flipper.enabled?(:shigimi_eyes, current_user)
+    acting_user = impersonating? ? real_user : current_user
+    return unless acting_user&.admin? && Flipper.enabled?(:shigimi_eyes, acting_user)
 
     classes = [ "admin", "tools-do" ]
     classes << "tools-do--inline" if compact
