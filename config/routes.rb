@@ -468,14 +468,15 @@ Rails.application.routes.draw do
     end
     resource :region, only: [ :update ]
     get "category/:slug", to: "items#category", as: :category
-    resources :suggestions, only: [ :create ]
+    resources :suggestions, only: [ :index, :create ] do
+      resources :votes, only: [ :create ], controller: "suggestion_votes"
+      collection do
+        get :history
+      end
+    end
     post "wishlists/:id", to: "wishlists#create", as: :create_wishlist
     delete "wishlists/:id", to: "wishlists#destroy", as: :wishlist
   end
-
-  # Report Reviews
-  get "report-reviews/review/:token", to: "report_reviews#review", as: :review_report_token
-  get "report-reviews/dismiss/:token", to: "report_reviews#dismiss", as: :dismiss_report_token
 
   # Voting
   get "rate/new", to: "votes#new", as: :new_rate
@@ -568,6 +569,7 @@ Rails.application.routes.draw do
       post :streamer_mode, on: :member, action: :toggle_streamer_mode
     end
     resources :dismissals, only: [ :create ]
+    resources :reports, only: [ :index ]
     post "verification/refresh", to: "verifications#refresh", as: :verification_refresh
     post "dev/pretend_idv", to: "dev_tools#pretend_idv", as: :pretend_idv_dev
     resources :notifications, only: [ :index ] do
@@ -736,10 +738,11 @@ Rails.application.routes.draw do
           post :force_state
         end
       end
-      resources :suggestions, only: [ :index ] do
+      resources :suggestions, only: [] do
         member do
-          post :dismiss
-          post :disable_for_user
+          post :accept
+          post :reject
+          delete :delete
         end
       end
     end
@@ -862,9 +865,6 @@ Rails.application.routes.draw do
       end
 
       resources :reports, path: "report", only: [ :index, :show ] do
-        collection do
-          post :process_demo_broken
-        end
         member do
           post :review
           post :dismiss
