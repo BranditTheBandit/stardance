@@ -9,7 +9,10 @@ class Admin::UsersController < Admin::ApplicationController
       users = users.where("email ILIKE ? OR display_name ILIKE ? OR slack_id ILIKE ?", q, q, q)
     end
 
-    @pagy, @users = pagy(:offset, users.order(:id))
+    # Pin the viewing admin's own row to the top of the (first page of the) list.
+    users = users.order(Arel.sql(User.sanitize_sql_array([ "(id = ?) DESC", current_user.id ]))).order(:id)
+
+    @pagy, @users = pagy(:offset, users)
   end
 
   def show

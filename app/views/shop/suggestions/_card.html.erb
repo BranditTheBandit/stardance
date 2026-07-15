@@ -1,4 +1,3 @@
-<% is_admin = current_user&.admin? %>
 <% decided_by ||= nil %>
 <% card_href = suggestion.accepted? && suggestion.shop_item_id ? shop_item_path(suggestion.shop_item_id) : nil %>
 <div class="suggestion-card<%= ' suggestion-card--linked' if card_href %>"
@@ -66,8 +65,8 @@
     <% end %>
   </div>
 
-  <% if is_admin && suggestion.pending? %>
-    <div class="suggestion-card__admin-strip">
+  <% if suggestion.pending? %>
+    <%= admin_tool(extra_class: "suggestion-card__admin-strip") do %>
       <div class="suggestion-card__admin-row">
         <%= button_to "Accept →",
                       accept_admin_shop_suggestion_path(suggestion),
@@ -92,6 +91,6 @@
                          class: "suggestion-card__reject-reason" %>
         <%= f.submit "Reject", class: "suggestion-card__reject-btn" %>
       <% end %>
-    </div>
+    <% end %>
   <% end %>
 </div>
