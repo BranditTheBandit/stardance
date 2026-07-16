@@ -21,24 +21,28 @@ class UsersController < ApplicationController
   end
 
   def update
-    if @user.update(user_params)
-      respond_to do |format|
-        format.turbo_stream do
-          flash.now[:notice] = "Profile updated."
-          render turbo_stream: turbo_stream.update("flash-region", partial: "shared/flash")
+    whodunnit = impersonating? ? real_user&.id : current_user&.id
+
+    PaperTrail.request(whodunnit: whodunnit) do
+      if @user.update(user_params)
+        respond_to do |format|
+          format.turbo_stream do
+            flash.now[:notice] = "Profile updated."
+            render turbo_stream: turbo_stream.update("flash-region", partial: "shared/flash")
+          end
+          format.html { redirect_to profile_path(@user.display_name), notice: "Profile updated." }
         end
-        format.html { redirect_to profile_path(@user.display_name), notice: "Profile updated." }
-      end
-    else
-      respond_to do |format|
-        format.turbo_stream do
-          flash.now[:alert] = @user.errors.full_messages.to_sentence
-          render turbo_stream: turbo_stream.update("flash-region", partial: "shared/flash"), status: :unprocessable_entity
-        end
-        format.html do
-          flash.now[:alert] = @user.errors.full_messages.to_sentence
-          load_profile("feed")
-          render :show, status: :unprocessable_entity
+      else
+        respond_to do |format|
+          format.turbo_stream do
+            flash.now[:alert] = @user.errors.full_messages.to_sentence
+            render turbo_stream: turbo_stream.update("flash-region", partial: "shared/flash"), status: :unprocessable_entity
+          end
+          format.html do
+            flash.now[:alert] = @user.errors.full_messages.to_sentence
+            load_profile("feed")
+            render :show, status: :unprocessable_entity
+          end
         end
       end
     end
