@@ -47,12 +47,18 @@ module ApplicationHelper
   # that sit inside a line of text (e.g. a username byline) rather than
   # wrapping a standalone block of debug content.
   #
+  # roles: lets specific call sites (e.g. the "view in admin" hammer link)
+  # opt additional roles into an otherwise admin-only marker, without
+  # loosening every other admin_tool usage (comment delete, super star
+  # controls, profile/project edit) to those roles too.
+  #
   # Uses real_user rather than current_user while impersonating, so the
   # admin retains their own debug tooling instead of losing it to whatever
   # role the impersonated account happens to have.
-  def admin_tool(compact: false, extra_class: nil, &block)
+  def admin_tool(compact: false, extra_class: nil, roles: [], &block)
     acting_user = impersonating? ? real_user : current_user
-    return unless acting_user&.admin? && Flipper.enabled?(:shigimi_eyes, acting_user)
+    allowed = acting_user&.admin? || roles.any? { |role| acting_user&.has_role?(role) }
+    return unless allowed && Flipper.enabled?(:shigimi_eyes, acting_user)
 
     classes = [ "admin", "tools-do" ]
     classes << "tools-do--inline" if compact

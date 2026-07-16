@@ -1,3 +1,4 @@
+<% card_content = capture do %>
 <% on_card_link_target = card_link_url.present? && request.path == card_link_url %>
 <% if on_card_link_target %>
 <article id="<%= dom_id(post) %>" class="<%= card_classes %>">
@@ -82,6 +83,24 @@
       <% end %>
     </div>
   </header>
+
+  <% if deleted_devlog? %>
+    <p class="feed-post-card__deleted-notice">This devlog was deleted<% if display_postable.deleted_at.present? %> on <%= l(display_postable.deleted_at.to_date, format: :long) %><% end %>.</p>
+  <% end %>
+
+  <% if devlog? && hackatime_breakdown_url.present? %>
+    <%= helpers.admin_tool do %>
+      <details class="feed-post-card__hackatime">
+        <summary class="feed-post-card__hackatime-summary">Hackatime breakdown</summary>
+        <%= helpers.turbo_frame_tag dom_id(postable, :hackatime_breakdown),
+              src: hackatime_breakdown_url,
+              loading: :lazy,
+              class: "feed-post-card__hackatime-frame" do %>
+          <p class="feed-post-card__hackatime-loading">Loading&hellip;</p>
+        <% end %>
+      </details>
+    <% end %>
+  <% end %>
 
   <% if fire_event? %>
     <div class="feed-post-card__super-star-body markdown-content">
@@ -276,3 +295,12 @@
   </footer>
   <% end %>
 </article>
+<% end %>
+
+<% if deleted_devlog? %>
+  <%= helpers.admin_tool(roles: [ :fraud_dept ]) do %>
+    <%= card_content %>
+  <% end %>
+<% else %>
+  <%= card_content %>
+<% end %>

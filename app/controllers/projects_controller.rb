@@ -91,9 +91,19 @@ class ProjectsController < ApplicationController
         scope = scope.joins("LEFT JOIN post_devlogs ON posts.postable_type = 'Post::Devlog' AND posts.postable_id = post_devlogs.id")
                      .where("posts.postable_type != 'Post::Devlog' OR post_devlogs.deleted_at IS NULL")
       end
-      posts = scope.select { |post| post.postable.present? }
-      preload_timeline_postables(posts, project_context: true)
-      posts
+
+      build_posts = -> {
+        posts = scope.select { |post| post.postable.present? }
+        preload_timeline_postables(posts, project_context: true)
+        posts
+      }
+
+      # Post::Devlog has its own default_scope (SoftDeletable), which the
+      # preloader above respects regardless of the SQL filter toggled just
+      # above — without unscoping, a deleted devlog's postable silently
+      # comes back nil and gets dropped, even when the viewer is authorized
+      # to see it.
+      include_deleted_devlogs ? Post::Devlog.unscoped(&build_posts) : build_posts.call
     }
 
     @posts = if policy(@project).view_deleted_devlogs?
