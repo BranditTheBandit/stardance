@@ -39,7 +39,8 @@ class ProjectsController < ApplicationController
     @members = @project.users.where(banned: false).to_a
     @is_member = current_user && @members.include?(current_user)
     @active_nav_slug = @is_member ? "projects" : "home"
-    @can_edit_project = @is_member && policy(@project).update?
+    @can_edit_project = policy(@project).update?
+    @admin_editing_project = !@is_member && current_user&.admin?
     @follower_count = @project.project_follows.size
     @viewer_follow = current_user && @project.project_follows.find_by(user_id: current_user.id)
     @total_hours = (@project.duration_seconds / 3600.0).round
@@ -329,11 +330,16 @@ class ProjectsController < ApplicationController
   def update
     authorize @project
 
-    @project.assign_attributes(project_params)
-    validate_urls
-    success = @project.errors.empty? && @project.save
+    whodunnit = impersonating? ? real_user&.id : current_user&.id
+    success = nil
 
-    link_hackatime_projects if success
+    PaperTrail.request(whodunnit: whodunnit) do
+      @project.assign_attributes(project_params)
+      validate_urls
+      success = @project.errors.empty? && @project.save
+
+      link_hackatime_projects if success
+    end
     # 2nd check w/ @project.errors.empty? is not redudant. this is ensures that hackatime is linked!
     if success && @project.errors.empty?
       respond_to do |format|
