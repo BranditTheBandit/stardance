@@ -17,6 +17,7 @@
 
 <div class="app-layout" data-controller="profile-modal">
   <div class="app-layout__main">
+    <%= render "shared/inspector", record: @user %>
     <%= turbo_frame_tag "profile_card" do %>
     <%= form_with model: @user, url: user_path(@user), method: :patch, multipart: true,
                   class: "profile",

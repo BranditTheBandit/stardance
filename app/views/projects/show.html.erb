@@ -28,6 +28,7 @@
 
 <div class="app-layout" data-controller="profile-modal">
   <div class="app-layout__main">
+    <%= render "shared/inspector", record: @project %>
     <%= turbo_frame_tag "project_hero" do %>
     <% if can_edit_project && (params[:editing].present? || @project.errors.any?) %>
       <%= form_with(model: @project,
