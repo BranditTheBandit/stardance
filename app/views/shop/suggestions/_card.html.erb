@@ -65,8 +65,8 @@
     <% end %>
   </div>
 
-  <% if suggestion.pending? %>
-    <%= admin_tool(extra_class: "suggestion-card__admin-strip") do %>
+  <% if suggestion.pending? && current_user&.admin? %>
+    <div class="admin tools-do suggestion-card__admin-strip">
       <div class="suggestion-card__admin-row">
         <%= button_to "Accept →",
                       accept_admin_shop_suggestion_path(suggestion),
@@ -91,6 +91,6 @@
                          class: "suggestion-card__reject-reason" %>
         <%= f.submit "Reject", class: "suggestion-card__reject-btn" %>
       <% end %>
-    <% end %>
+    </div>
   <% end %>
 </div>
