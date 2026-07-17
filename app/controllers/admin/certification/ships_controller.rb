@@ -35,6 +35,7 @@ class Admin::Certification::ShipsController < Admin::Certification::ApplicationC
                          limit: 25)
 
     @own_project_ids = current_user.memberships.pluck(:project_id).to_set
+    @internal_sw_dash_reviews_disabled = internal_sw_dash_reviews_disabled?
 
     @stats = ::Certification::Ship.dashboard_stats
     @lb_period = params[:lb].presence_in(%w[daily weekly alltime]) || "daily"
@@ -70,9 +71,14 @@ class Admin::Certification::ShipsController < Admin::Certification::ApplicationC
 
   def show
     authorize @ship
-    @reviewed_today = ::Certification::Ship.reviewed_today(current_user)
-    @next_rank = ::Certification::Ship.rank_for_reviewer_with_count(current_user.id, @reviewed_today + 1)
-    @next_multiplier = ::Certification::Ship.multiplier_for_rank(@next_rank)
+    if params[:via] == "dashboard"
+      return redirect_to admin_certification_ships_path, alert: "This project has been deleted." if @ship.project.deleted_at?
+      return redirect_to project_path(@ship.project)
+    end
+    if internal_sw_dash_reviews_disabled? && (dash_url = ExternalDashboard::Client.certification_url(@ship.external_certification_id))
+      return redirect_to dash_url, allow_other_host: true
+    end
+    set_milestone_context
   end
 
   def report_fraud
@@ -105,9 +111,9 @@ class Admin::Certification::ShipsController < Admin::Certification::ApplicationC
     type = params[:project_type].presence_in(Project::AVAILABLE_CATEGORIES)
     if type
       @ship.project.update!(project_type: type)
-      redirect_to admin_certification_ship_path(@ship), notice: "Project type updated."
+      redirect_to ship_redirect_path, notice: "Project type updated."
     else
-      redirect_to admin_certification_ship_path(@ship), alert: "Invalid project type."
+      redirect_to ship_redirect_path, alert: "Invalid project type."
     end
   end
 
@@ -119,22 +125,35 @@ class Admin::Certification::ShipsController < Admin::Certification::ApplicationC
 
   def update
     authorize @ship
+    if internal_sw_dash_reviews_disabled? && @ship.external_certification_id.present?
+      return redirect_to admin_certification_ships_path, alert: "Reviews are handled on the Shipwrights dashboard."
+    end
     return redirect_to admin_certification_ship_path(@ship), alert: "Ship is no longer pending." unless @ship.pending?
 
     @ship.reviewer = current_user
     if @ship.update(ship_params)
       verb = @ship.approved? ? "Approved" : "Returned"
       count = ::Certification::Ship.reviewed_today(current_user)
-      redirect_to admin_certification_ships_path,
-                  notice: "#{verb} \"#{@ship.project.title}.\" That's #{count} reviewed today. Keep going!"
+      notice = "#{verb} \"#{@ship.project.title}.\" That's #{count} reviewed today. Keep going!"
+      if params[:redirect_to_hardware].present?
+        redirect_to admin_certification_hardware_review_path(@ship.project_id), notice: notice
+      else
+        redirect_to admin_certification_ships_path, notice: notice
+      end
     else
-      @reviewed_today = ::Certification::Ship.reviewed_today(current_user)
-      render :show, status: :unprocessable_entity
+      if params[:redirect_to_hardware].present?
+        load_hardware_review_context
+        render "admin/certification/hardware_reviews/show", status: :unprocessable_entity
+      else
+        set_milestone_context
+        render :show, status: :unprocessable_entity
+      end
     end
   end
 
   def next
     authorize ::Certification::Ship
+    return redirect_to admin_certification_ships_path, notice: "Reviews are handled on the Shipwrights dashboard." if internal_sw_dash_reviews_disabled?
     skip_ids = parse_skip_ids
     candidate = ::Certification::Ship.next_eligible(current_user, skip_ids: skip_ids)
     if candidate.nil?
@@ -162,6 +181,39 @@ class Admin::Certification::ShipsController < Admin::Certification::ApplicationC
     @ship = ::Certification::Ship.find(params[:id])
   end
 
+  def set_milestone_context
+    @reviews_today = ::Certification::Ship.reviewed_today(current_user)
+    @current_multiplier = ::Certification::Ship.multiplier_for_milestone(@reviews_today)
+    @next_milestone = ::Certification::Ship.next_milestone(@reviews_today)
+  end
+
+  def ship_redirect_path
+    if params[:redirect_to_hardware].present?
+      admin_certification_hardware_review_path(@ship.project_id)
+    else
+      admin_certification_ship_path(@ship)
+    end
+  end
+
+  def load_hardware_review_context
+    @project = @ship.project
+    @funding_request = @project.latest_funding_request
+    @owner = @ship.owner
+    @active_review = @ship
+    @active_review_type = :ship
+    @reviewed_today = ::Certification::FundingRequest.reviewed_today(current_user) +
+                      ::Certification::Ship.reviewed_today(current_user)
+    @lapse_timelapses = Rails.cache.fetch([ "hardware_review_recordings", "lapse", @project.id ], expires_in: 1.minute) do
+      LapseService.timelapses_for_project(
+        hackatime_user_id: @owner&.hackatime_identity&.uid,
+        project_keys: @project.hackatime_keys
+      )
+    end
+    @lookout_recordings = Rails.cache.fetch([ "hardware_review_recordings", "lookout", @project.id ], expires_in: 1.minute) do
+      LookoutService.recordings_for_project(@project)
+    end
+  end
+
   # The .app-layout wrapper reserves the sidebar gutter itself; this body class
   # zeroes the body's own sidebar margin so the two don't stack into a huge gap.
   def set_body_class
@@ -170,6 +222,10 @@ class Admin::Certification::ShipsController < Admin::Certification::ApplicationC
 
   def release_other_claims
     ::Certification::Ship.release_all_for(current_user) if current_user.present?
+  end
+
+  def internal_sw_dash_reviews_disabled?
+    Flipper.enabled?(:disable_internal_sw_dash_reviews, current_user)
   end
 
   def parse_skip_ids
