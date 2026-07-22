@@ -814,6 +814,7 @@ Rails.application.routes.draw do
       # Integrity review queue — restricted to admins and fraud leads.
       get "integrity", to: "integrity#index", as: "integrity_reviews"
       get "integrity/:id", to: "integrity#show", as: "integrity_review"
+      patch "integrity/:id", to: "integrity#update"
 
       # Reviewer stats & payout requests
       scope "/ship" do
