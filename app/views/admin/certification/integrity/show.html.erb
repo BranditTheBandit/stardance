@@ -205,7 +205,7 @@
       <div class="integrity-review__decision-fields">
         <div class="integrity-review__decision-field">
           <%= label_tag :deduction_hours, "Hours to deduct", class: "integrity-review__decision-label" %>
-          <%= number_field_tag :deduction_hours, params[:deduction_hours], step: 0.1, min: 0, inputmode: "decimal", class: "integrity-review__decision-input", aria: { describedby: "integrity-review-deduct-help" } %>
+          <%= number_field_tag :deduction_hours, params[:deduction_hours], step: 0.1, min: 0, inputmode: "decimal", autocomplete: "off", class: "integrity-review__decision-input", aria: { describedby: "integrity-review-deduct-help" } %>
           <p class="integrity-review__decision-help" id="integrity-review-deduct-help">Only used by the "Deduct hours" verdict.</p>
         </div>
         <div class="integrity-review__decision-field integrity-review__decision-field--wide">
