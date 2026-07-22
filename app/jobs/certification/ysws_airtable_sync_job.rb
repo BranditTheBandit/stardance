@@ -364,13 +364,14 @@ module Certification
       intro = "The user logged #{original_formatted} on hackatime.#{adjusted_note}"
       intro += "\n#{commit_activity_sentence(review, total_original_minutes)}"
       intro += "\nThis is a project update." if project_updated
-
-      integrity_note = INTEGRITY_JUSTIFICATION_NOTES.fetch(integrity_check.status)
       if deducted_minutes.positive?
         deducted_hours = (deducted_minutes / 60.0).round(2)
-        integrity_note += " Further deducted by #{deducted_hours} hours by the fraud department for hour fraud."
-        integrity_note += " Reason: #{integrity_check.decision_justification}" if integrity_check.decision_justification.present?
+        deduction_explanation = "Further deducted by #{deducted_hours} hours by the fraud department for hour fraud."
+        deduction_explanation += " Reason: #{integrity_check.decision_justification}" if integrity_check.decision_justification.present?
+        intro += "\n#{deduction_explanation}"
       end
+
+      integrity_note = INTEGRITY_JUSTIFICATION_NOTES.fetch(integrity_check.status)
 
       justification = <<~JUSTIFICATION
         #{intro}
