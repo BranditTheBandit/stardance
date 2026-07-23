@@ -408,7 +408,7 @@
                   <% if @project.hardware? %>
                     <span class="project-show__tag project-show__tag--hardware">Hardware</span>
                   <% end %>
-                  <%= admin_tool(compact: true, roles: [ :fraud_dept ]) do %>
+                  <%= admin_tool(compact: true, roles: [ :fraud_dept, :helper ]) do %>
                     <%= link_to "🔨", admin_project_path(@project), class: "project-show__admin-link", data: { turbo_frame: "_top" }, "aria-label": "View #{@project.title} in admin" %>
                   <% end %>
                 </div>
