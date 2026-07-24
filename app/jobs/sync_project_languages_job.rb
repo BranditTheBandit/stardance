@@ -65,15 +65,14 @@ class SyncProjectLanguagesJob < ApplicationJob
         language_stats: r[:language_stats],
         error_message: r[:error_message],
         last_synced_at: r[:last_synced_at],
-        created_at: Time.current,
-        updated_at: Time.current
+        created_at: Time.current
       }
     end
 
     ProjectLanguage.upsert_all(
       upsert_data,
       unique_by: :index_project_languages_on_project_id_unique,
-      update_only: [ :status, :language_stats, :error_message, :last_synced_at, :updated_at ]
+      update_only: [ :status, :language_stats, :error_message, :last_synced_at ]
     )
 
     Rails.logger.info "[SyncProjectLanguages] Upserted #{upsert_data.count} records"
