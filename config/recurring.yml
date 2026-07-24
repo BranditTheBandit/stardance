@@ -177,6 +177,12 @@ production:
     concurrency: 1
     description: "Sync streak activities from Hackatime for all active users"
 
+  sync_project_languages:
+    class: SyncProjectLanguagesJob
+    schedule: every 5 minutes
+    concurrency: 1
+    description: "Sync GitHub language stats for projects, 10 at a time"
+
   ahoy_backfill_project_created_ahoy_events:
     class: AhoyBackfillProjectCreatedJob
     schedule: every day at 5am America/New_York
