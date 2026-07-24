@@ -143,27 +143,64 @@
 
     &--blue {
       border-color: var(--color-brand-blue);
+
+      .admin-user-show__integrity-status {
+        color: var(--color-brand-blue);
+      }
     }
 
-    &--yellow {
-      border-color: var(--color-brand-yellow);
+    &--amber {
+      border-color: var(--color-amber-500);
+
+      .admin-user-show__integrity-status {
+        color: var(--color-amber-500);
+      }
     }
 
     &--green {
       border-color: var(--color-green-400);
+
+      .admin-user-show__integrity-status {
+        color: var(--color-green-400);
+      }
     }
 
     &--red {
       border-color: var(--color-brand-salmon);
+
+      .admin-user-show__integrity-status {
+        color: var(--color-brand-salmon);
+      }
     }
   }
 
   &__integrity-status {
-    color: var(--color-space-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 0.75rem;
-    margin-left: var(--space-xxs);
+    font-weight: 700;
+  }
+
+  &__integrity-fields {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-s) var(--space-l);
+    margin: 0;
+  }
+
+  &__integrity-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xxs);
+
+    dt {
+      color: var(--color-space-text-muted);
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    dd {
+      margin: 0;
+      color: var(--color-space-text);
+    }
   }
 }
 
