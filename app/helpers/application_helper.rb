@@ -155,7 +155,7 @@ module ApplicationHelper
 
   def certification_verdict_video_src(cert)
     return if cert.nil?
-    return rails_storage_redirect_path(cert.verdict_video) if cert.verdict_video.attached?
+    return cert.verdict_video.url(disposition: :inline) if cert.verdict_video.attached?
 
     active_storage_redirect_url(safe_external_url(cert.proof_video_url))
   end
