@@ -225,6 +225,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_24_223107) do
   end
 
   create_table "certification_ship_reviews", force: :cascade do |t|
+    t.float "bonus_stardust"
     t.datetime "claim_expires_at"
     t.datetime "claimed_at"
     t.datetime "created_at", null: false
