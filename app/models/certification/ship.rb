@@ -3,6 +3,7 @@
 # Table name: certification_ship_reviews
 #
 #  id                        :bigint           not null, primary key
+#  bonus_stardust            :float
 #  claim_expires_at          :datetime
 #  claimed_at                :datetime
 #  decided_at                :datetime
@@ -144,6 +145,9 @@ module Certification
                                 allow_blank: true
     validates :verdict_video,
               content_type: { in: ACCEPTED_VIDEO_TYPES, spoofing_protection: true }
+    validates :bonus_stardust,
+              numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 },
+              allow_nil: true
 
     scope :for_reviewer, ->(user) {
       joins(:project)
@@ -393,12 +397,13 @@ module Certification
       decided_at || updated_at
     end
 
+
     private
 
     def assign_stardust_earned
       total_count = Certification::Ship.decided_today_count(reviewer_id) + 1
       multiplier = Certification::Ship.multiplier_for_milestone(total_count)
-      self.stardust_earned = REVIEW_BOUNTY * multiplier
+      self.stardust_earned = (REVIEW_BOUNTY * multiplier) + (bonus_stardust || 0)
     end
 
     def stamp_claimed_at
