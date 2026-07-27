@@ -861,6 +861,7 @@ Rails.application.routes.draw do
       get "review/dashboard", to: "ysws/dashboard#show", as: "ysws_dashboard"
       get "review/:id", to: "ysws#show", as: "ysws_review"
       get "review/:id/commits", to: "ysws#commits", as: "ysws_commits"
+      get "review/:id/double_dip", to: "ysws#double_dip", as: "ysws_double_dip"
       post "review/:id/report_fraud", to: "ysws#report_fraud", as: "ysws_report_fraud"
       delete "review/:id/claim", to: "ysws#unclaim", as: "ysws_claim"
       post "review/:id/complete", to: "ysws#complete", as: "complete_ysws_review"

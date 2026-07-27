@@ -177,7 +177,11 @@
     </div>
 
     <!-- Right Column -->
-    <div class="review-detail-right <%= "review-detail-right--double-dipped" if @double_dip_submissions.any? %>" data-certification--ysws--review-sidebar-target="sidebar">
+    <div class="review-detail-right"
+         data-certification--ysws--review-sidebar-target="sidebar"
+         data-controller="certification--ysws--double-dip"
+         data-certification--ysws--double-dip-url-value="<%= admin_certification_ysws_double_dip_path(@review) %>"
+         data-certification--ysws--double-dip-outline-class="review-detail-right--double-dipped">
       <!-- Details Card -->
       <section class="review-card details-card">
         <div class="details-list">
@@ -271,15 +275,15 @@
           <% end %>
         </div>
 
-        <% if @double_dip_submissions.any? %>
-          <div class="double-dip-warning" role="alert">
-            <p class="double-dip-warning__title">This project may have been double dipped</p>
-            <p class="double-dip-warning__detail">
-              This repo is already in the unified DB under
-              <%= @double_dip_submissions.filter_map(&:program_name).uniq.to_sentence.presence || "another YSWS" %>.
-            </p>
-          </div>
-        <% end %>
+        <%# Revealed by the double-dip controller once the unified DB responds %>
+        <div class="double-dip-warning" role="alert" hidden
+             data-certification--ysws--double-dip-target="warning">
+          <p class="double-dip-warning__title">This project may have been double dipped</p>
+          <p class="double-dip-warning__detail">
+            This repo is already in the unified DB under
+            <span data-certification--ysws--double-dip-target="programs">another YSWS</span>.
+          </p>
+        </div>
       </section>
 
       <!-- Description Card -->
