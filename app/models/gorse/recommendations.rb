@@ -35,16 +35,30 @@ class Gorse::Recommendations
     def recommended_posts(limit)
       ids = recommendation_ids(category: "feed", count: limit * 3)
       posts = posts_from_ids(ids)
-      if posts.size >= limit
-        posts.first(limit)
-      else
-        posts
+      diversify_posts(posts, limit:)
+    end
+
+    def diversify_posts(posts, limit:)
+      selected = []
+      seen_user_ids = Set.new
+      seen_project_ids = Set.new
+
+      posts.each do |post|
+        next if post.user_id.present? && seen_user_ids.include?(post.user_id)
+        next if post.project_id.present? && seen_project_ids.include?(post.project_id)
+
+        selected << post
+        seen_user_ids << post.user_id if post.user_id.present?
+        seen_project_ids << post.project_id if post.project_id.present?
+        break if selected.size >= limit
       end
+
+      selected
     end
 
     def posts_from_ids(ids)
       post_ids = ids.filter_map { |id| Gorse::Ids.post_id(id) }
-      posts = Gorse::PostPayload.feed_scope(user)
+      posts = Gorse::PostPayload.recommendable_feed_scope(user)
                                 .where(id: post_ids)
                                 .includes(:user, :project, :postable)
                                 .index_by(&:id)
