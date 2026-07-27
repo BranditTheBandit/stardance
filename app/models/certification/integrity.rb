@@ -54,6 +54,16 @@ module Certification
 
     DECIDED_STATUSES = %w[banned deducted manually_passed].freeze
 
+    # Display order for mixed-status listings (e.g. a user's integrity
+    # history): auto-passed, passed, rejected, deducted, then pending last.
+    STATUS_SORT_ORDER = %w[auto_passed manually_passed banned deducted pending].freeze
+
+    scope :by_status_priority, -> {
+      order(Arel.sql(
+        "CASE status #{STATUS_SORT_ORDER.each_with_index.map { |s, i| "WHEN #{statuses[s]} THEN #{i}" }.join(' ')} END"
+      ))
+    }
+
     # How long a reviewer's claim on a review holds before it's up for grabs
     # again. There's no separate expiry column — expiry is just claimed_at + TTL.
     CLAIM_TTL = 20.minutes
