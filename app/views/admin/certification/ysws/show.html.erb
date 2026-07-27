@@ -177,7 +177,7 @@
     </div>
 
     <!-- Right Column -->
-    <div class="review-detail-right" data-certification--ysws--review-sidebar-target="sidebar">
+    <div class="review-detail-right <%= "review-detail-right--double-dipped" if @double_dip_submissions.any? %>" data-certification--ysws--review-sidebar-target="sidebar">
       <!-- Details Card -->
       <section class="review-card details-card">
         <div class="details-list">
@@ -270,6 +270,16 @@
             <span class="detail-link-btn disabled" title="No readme URL available">Readme</span>
           <% end %>
         </div>
+
+        <% if @double_dip_submissions.any? %>
+          <div class="double-dip-warning" role="alert">
+            <p class="double-dip-warning__title">This project may have been double dipped</p>
+            <p class="double-dip-warning__detail">
+              This repo is already in the unified DB under
+              <%= @double_dip_submissions.filter_map(&:program_name).uniq.to_sentence.presence || "another YSWS" %>.
+            </p>
+          </div>
+        <% end %>
       </section>
 
       <!-- Description Card -->

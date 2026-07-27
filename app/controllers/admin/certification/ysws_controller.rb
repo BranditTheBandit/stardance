@@ -87,6 +87,9 @@ class Admin::Certification::YswsController < Admin::Certification::ApplicationCo
     # Check if review is already in unified DB
     @review.check_and_update_unified_db_status!
 
+    # Same repo submitted to another YSWS program — surfaced in the sidebar.
+    @double_dip_submissions = ::Certification::UnifiedYswsService.double_dip_submissions(@review.project.repo_url)
+
     # Earlier reviews of the same project. Their devlogs are shown frozen
     # (read-only) for context, oldest first, with only the current review's
     # devlogs editable.
