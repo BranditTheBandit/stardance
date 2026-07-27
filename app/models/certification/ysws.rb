@@ -80,7 +80,7 @@ module Certification
     # A review is visible to a reviewer if nobody holds an active claim on it,
     # or they're the one holding it.
     scope :unclaimed_or_claimed_by, ->(user) {
-      where("claimed_by_id IS NULL OR claimed_at IS NULL OR claimed_at < :expired OR claimed_by_id = :user_id",
+      where("certification_ysws_reviews.claimed_by_id IS NULL OR certification_ysws_reviews.claimed_at IS NULL OR certification_ysws_reviews.claimed_at < :expired OR certification_ysws_reviews.claimed_by_id = :user_id",
             expired: CLAIM_TTL.ago, user_id: user.id)
     }
 
