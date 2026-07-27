@@ -59,9 +59,10 @@ module Certification
     STATUS_SORT_ORDER = %w[auto_passed manually_passed banned deducted pending].freeze
 
     scope :by_status_priority, -> {
-      order(Arel.sql(
-        "CASE status #{STATUS_SORT_ORDER.each_with_index.map { |s, i| "WHEN #{statuses[s]} THEN #{i}" }.join(' ')} END"
-      ))
+      case_node = STATUS_SORT_ORDER.each_with_index.inject(Arel::Nodes::Case.new(arel_table[:status])) do |case_node, (status, priority)|
+        case_node.when(statuses[status]).then(priority)
+      end
+      order(case_node)
     }
 
     # How long a reviewer's claim on a review holds before it's up for grabs
