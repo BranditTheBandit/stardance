@@ -5,6 +5,7 @@
 # Table name: certification_ship_reviews
 #
 #  id                        :bigint           not null, primary key
+#  bonus_stardust            :float
 #  claim_expires_at          :datetime
 #  claimed_at                :datetime
 #  decided_at                :datetime

@@ -1,10 +1,10 @@
 class AdminPolicy < ApplicationPolicy
   def index?
-    user.admin? || user.fraud_dept? || user.shop_manager? || user.helper? || user.workshop_manager?
+    user.admin? || user.fraud_dept? || user.shop_manager? || user.helper? || user.nda_helper? || user.workshop_manager?
   end
 
   def access_admin_endpoints?
-    user.admin? || user.fraud_dept? || user.shop_manager? || user.helper?
+    user.admin? || user.fraud_dept? || user.shop_manager? || user.helper? || user.nda_helper?
   end
 
   def access_funnel?
