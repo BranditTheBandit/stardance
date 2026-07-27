@@ -60,6 +60,10 @@ module Certification
 
     has_many :devlog_reviews, class_name: "Certification::Devlog", foreign_key: :ysws_review_id, dependent: :destroy
 
+    # An integrity check hangs off the ship event (one per ship event), so a
+    # review maps 1-1 to one through its own ship event.
+    has_one :integrity_check, through: :post_ship_event, source: :integrity_check
+
     validates :original_minutes, numericality: { greater_than_or_equal_to: 0 }, allow_nil: false
     validates :approved_minutes, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
 
@@ -76,7 +80,7 @@ module Certification
     # A review is visible to a reviewer if nobody holds an active claim on it,
     # or they're the one holding it.
     scope :unclaimed_or_claimed_by, ->(user) {
-      where("claimed_by_id IS NULL OR claimed_at IS NULL OR claimed_at < :expired OR claimed_by_id = :user_id",
+      where("certification_ysws_reviews.claimed_by_id IS NULL OR certification_ysws_reviews.claimed_at IS NULL OR certification_ysws_reviews.claimed_at < :expired OR certification_ysws_reviews.claimed_by_id = :user_id",
             expired: CLAIM_TTL.ago, user_id: user.id)
     }
 
@@ -94,6 +98,10 @@ module Certification
     scope :with_todo_devlog_count, -> {
       select("certification_ysws_reviews.*", "#{TODO_DEVLOG_COUNT_SQL} AS todo_devlog_count")
     }
+
+    # Reviews whose ship event already carries an integrity check. The queue
+    # defaults to this — a review can't be completed without one.
+    scope :with_integrity_check, -> { joins(:integrity_check) }
 
     scope :by_project_type, ->(type) {
       type == "unclassified" \
