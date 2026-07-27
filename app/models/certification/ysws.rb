@@ -99,9 +99,12 @@ module Certification
       select("certification_ysws_reviews.*", "#{TODO_DEVLOG_COUNT_SQL} AS todo_devlog_count")
     }
 
-    # Reviews whose ship event already carries an integrity check. The queue
-    # defaults to this — a review can't be completed without one.
-    scope :with_integrity_check, -> { joins(:integrity_check) }
+    # Reviews whose ship event already carries a decided integrity check. The
+    # queue defaults to this — a review can't be completed without one, and a
+    # still-pending integrity check isn't decided yet.
+    scope :with_integrity_check, -> {
+      joins(:integrity_check).where.not(certification_integrities: { status: :pending })
+    }
 
     scope :by_project_type, ->(type) {
       type == "unclassified" \
