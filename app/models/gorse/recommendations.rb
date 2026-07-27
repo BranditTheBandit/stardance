@@ -3,6 +3,7 @@
 class Gorse::Recommendations
   DEFAULT_LIMIT = 6
   CACHE_TTL = 2.minutes
+  GUEST_RECOMMENDER = "trending_recent"
 
   def initialize(user:, client: Gorse::Client.new)
     @user = user
@@ -10,7 +11,7 @@ class Gorse::Recommendations
   end
 
   def posts(limit: DEFAULT_LIMIT)
-    if enabled?(:gorse_personalized_feed)
+    if post_recommendations_enabled?
       recommended_posts(limit)
     else
       []
@@ -32,8 +33,23 @@ class Gorse::Recommendations
       user.present? && Gorse.enabled? && Flipper.enabled?(flag, user)
     end
 
+    def post_recommendations_enabled?
+      return false unless Gorse.enabled?
+
+      if user.present?
+        Flipper.enabled?(:gorse_personalized_feed, user)
+      else
+        Flipper.enabled?(:gorse_personalized_feed)
+      end
+    end
+
     def recommended_posts(limit)
-      ids = recommendation_ids(category: "feed", count: limit * 3)
+      ids =
+        if user.present?
+          recommendation_ids(category: "feed", count: limit * 3)
+        else
+          guest_recommendation_ids(category: "feed", count: limit * 3)
+        end
       posts = posts_from_ids(ids)
       diversify_posts(posts, limit:)
     end
@@ -82,6 +98,15 @@ class Gorse::Recommendations
         expires_in: CACHE_TTL
       ) do
         client.recommend(Gorse::Ids.user(user), category: category, count: count)
+      end
+    end
+
+    def guest_recommendation_ids(category:, count:)
+      Rails.cache.fetch(
+        [ "gorse", "recommendations", "guest", GUEST_RECOMMENDER, category, count ],
+        expires_in: CACHE_TTL
+      ) do
+        client.non_personalized(GUEST_RECOMMENDER, category:, count:)
       end
     end
 
