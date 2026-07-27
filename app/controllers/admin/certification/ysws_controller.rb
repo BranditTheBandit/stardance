@@ -17,6 +17,15 @@ class Admin::Certification::YswsController < Admin::Certification::ApplicationCo
         filters.delete("project_type")
       end
     end
+    # Only the opt-out is worth persisting — an absent key means the default
+    # "integrity checks only" view.
+    if params.key?(:with_integrity)
+      if params[:with_integrity] == "0"
+        filters["with_integrity"] = "0"
+      else
+        filters.delete("with_integrity")
+      end
+    end
     if params.key?(:sort)
       sort = params[:sort].presence_in(%w[length todo])
       if sort
@@ -29,11 +38,13 @@ class Admin::Certification::YswsController < Admin::Certification::ApplicationCo
     end
     session[FILTER_SESSION_KEY] = filters
 
-    @project_type = filters["project_type"].presence
-    @sort         = filters["sort"].presence_in(%w[length todo])
-    @dir          = filters["dir"] == "asc" ? "asc" : "desc"
+    @project_type   = filters["project_type"].presence
+    @sort           = filters["sort"].presence_in(%w[length todo])
+    @dir            = filters["dir"] == "asc" ? "asc" : "desc"
+    @with_integrity = filters["with_integrity"] != "0"
 
     scope = ::Certification::Ysws.pending.unclaimed_or_claimed_by(current_user)
+    scope = scope.with_integrity_check if @with_integrity
 
     # Type filter options are whatever project types are actually present in the
     # pending queue (plus an "unclassified" bucket) — never hardcoded.
@@ -41,7 +52,7 @@ class Admin::Certification::YswsController < Admin::Certification::ApplicationCo
 
     scope = scope.by_project_type(@project_type) if @project_type
 
-    scope = scope.with_todo_devlog_count.includes(:project, :user)
+    scope = scope.with_todo_devlog_count.includes(:project, :user, :integrity_check)
 
     scope =
       case @sort
@@ -160,11 +171,12 @@ class Admin::Certification::YswsController < Admin::Certification::ApplicationCo
   private
 
   def ysws_review_filters
-    session[FILTER_SESSION_KEY].to_h.slice("project_type", "sort", "dir")
+    session[FILTER_SESSION_KEY].to_h.slice("project_type", "sort", "dir", "with_integrity")
   end
 
   def ysws_review_filter_params?
-    params.key?(:project_type) || params.key?(:sort) || params.key?(:dir)
+    params.key?(:project_type) || params.key?(:sort) || params.key?(:dir) ||
+      params.key?(:with_integrity)
   end
 
 
