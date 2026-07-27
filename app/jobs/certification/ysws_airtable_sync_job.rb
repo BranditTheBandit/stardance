@@ -296,7 +296,7 @@ module Certification
         "fraud_data" => integrity_check.fraud_detection_data&.to_json,
 
         # Double-dip flag
-        "flagged_double_dipped" => double_dipped?(project.repo_url)
+        "flagged_double_dipped" => ::Certification::UnifiedYswsService.double_dipped?(project.repo_url)
       }
     end
 
@@ -536,52 +536,6 @@ module Certification
       else
         Rails.logger.warn("[YswsAirtableSyncJob] review ##{review.id}: no Screenshot — no source images found. #{detail}")
       end
-    end
-
-    UNIFIED_YSWS_BASE_ID  = "app3A5kJwYqxMLOgh"
-    UNIFIED_YSWS_TABLE_ID = "tblzWWGUYHVH7Zyqf"
-
-    def normalize_code_url(url)
-      return "" if url.blank?
-
-      url
-        .sub(/\Ahttps?:\/\//, "")
-        .sub(/(?:\.git)?\/?(?:#.*)?$/, "")
-    end
-
-    def double_dipped?(repo_url)
-      normalized = normalize_code_url(repo_url)
-      return false if normalized.blank?
-
-      api_key = Rails.application.credentials.dig(:unified_ysws, :airtable_api_key) ||
-                ENV["UNIFIED_READ_ONLY"]
-
-      if api_key.blank?
-        Rails.logger.warn "[YswsAirtableSyncJob] double-dip check skipped: no API key configured (UNIFIED_READ_ONLY)"
-        return false
-      end
-
-      filter  = %Q(FIND("#{normalized}", {Code URL}))
-      encoded = URI.encode_uri_component(filter)
-      url     = "https://api.airtable.com/v0/#{UNIFIED_YSWS_BASE_ID}/#{UNIFIED_YSWS_TABLE_ID}" \
-                "?filterByFormula=#{encoded}&fields[]=Code%20URL"
-
-      response = Faraday.get(url) do |req|
-        req.headers["Authorization"] = "Bearer #{api_key}"
-        req.options.timeout = 10
-      end
-
-      unless response.success?
-        Rails.logger.warn "[YswsAirtableSyncJob] double-dip check failed: HTTP #{response.status} — #{response.body}"
-        return false
-      end
-
-      matches = JSON.parse(response.body).fetch("records", [])
-      Rails.logger.info "[YswsAirtableSyncJob] double-dip check: #{matches.size} match(es) for '#{normalized}'"
-      matches.any?
-    rescue StandardError => e
-      Rails.logger.error "[YswsAirtableSyncJob] double-dip check error: #{e.class}: #{e.message}"
-      false
     end
 
     # True when an earlier review exists for the same project (i.e. this is a

@@ -130,6 +130,22 @@ class Admin::Certification::YswsController < Admin::Certification::ApplicationCo
     end
   end
 
+  # Whether this repo is already in the unified DB under another YSWS program.
+  # Fetched from the sidebar after page load rather than during #show — the
+  # Airtable round trip is far too slow to hold the review page on.
+  def double_dip
+    @review = ::Certification::Ysws.includes(:project).find(params[:id])
+    authorize @review, :show?
+
+    submissions = ::Certification::UnifiedYswsService.double_dip_submissions(@review.project&.repo_url)
+    programs = submissions.filter_map(&:program_name).uniq
+
+    render json: {
+      double_dipped: submissions.any?,
+      programs_label: programs.any? ? programs.to_sentence : "another YSWS"
+    }
+  end
+
   def commits
     @review = ::Certification::Ysws.includes(:project).find(params[:id])
     authorize @review, :show?

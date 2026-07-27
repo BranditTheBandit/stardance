@@ -82,6 +82,12 @@ application.register(
   Certification__Ysws__DevlogTimeChartController,
 );
 
+import Certification__Ysws__DoubleDipController from "./certification/ysws/double_dip_controller";
+application.register(
+  "certification--ysws--double-dip",
+  Certification__Ysws__DoubleDipController,
+);
+
 import Certification__Ysws__FraudReportController from "./certification/ysws/fraud_report_controller";
 application.register(
   "certification--ysws--fraud-report",

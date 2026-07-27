@@ -990,6 +990,13 @@ body:has(.certification-ysws) {
       transition: none;
     }
 
+    // Repo already submitted to another YSWS — outline the whole sidebar.
+    &--double-dipped {
+      outline: 3px solid var(--color-brand-yellow);
+      outline-offset: var(--space-xs);
+      border-radius: var(--profile-radius);
+    }
+
     // Popup mode - triggered when boss note is visible
     &.is-popup-mode {
       position: fixed;
@@ -1955,6 +1962,30 @@ body:has(.certification-ysws) {
           background: rgba(255, 255, 255, 0.05);
         }
       }
+    }
+  }
+
+  // Double-dip warning (sidebar, under the repo / demo / readme links)
+  .double-dip-warning {
+    margin-top: var(--space-m);
+    padding: var(--space-s) var(--space-m);
+    background: rgba(255, 229, 100, 0.15);
+    border: 2px solid var(--color-brand-yellow);
+    border-radius: var(--profile-radius);
+    font-family: var(--font-family-sans);
+
+    &__title {
+      margin: 0;
+      color: var(--color-brand-yellow);
+      font-size: var(--font-size-s);
+      font-weight: 700;
+    }
+
+    &__detail {
+      margin: var(--space-xxs) 0 0;
+      color: var(--color-space-text-muted);
+      font-size: var(--font-size-xs);
+      line-height: 1.5;
     }
   }
 
