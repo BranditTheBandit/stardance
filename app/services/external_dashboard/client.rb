@@ -6,6 +6,7 @@ module ExternalDashboard
     ERROR_MESSAGE_MAX = 500
     DEFAULT_TIMEOUT_SECONDS = 10
     NOT_CONFIGURED_ERROR = "api key or workplace id missing".freeze
+    STRICT_INTEGER_PATTERN = /\A\d+\z/
 
     def configured?
       api_key.present? && workplace_id.present?
