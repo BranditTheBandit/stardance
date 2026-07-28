@@ -1024,7 +1024,7 @@
                 <%= image_tag current_user.avatar, alt: current_user.display_name, class: "project-show__avatar project-show__avatar--lg" %>
               </div>
 
-              <div class="ship-modal__preview-content">
+              <div class="ship-modal__preview-content" data-controller="textarea-hint">
                 <p class="project-show__latest-ship-heading">
                   <span class="project-show__latest-ship-author">@<%= current_user.display_name %></span>
                   <span class="project-show__latest-ship-on">on</span>
@@ -1041,7 +1041,8 @@
                       aria: { label: "Ship update" },
                       data: { composer_target: "textarea",
                               controller: "mention-autocomplete",
-                              action: "input->composer#autogrow input->composer#refreshSubmit keydown->mention-autocomplete#onKeydown input->mention-autocomplete#onInput blur->mention-autocomplete#onBlur" } %>
+                              action: "paste->textarea-hint#paste input->composer#autogrow input->composer#refreshSubmit keydown->mention-autocomplete#onKeydown input->mention-autocomplete#onInput blur->mention-autocomplete#onBlur" } %>
+                <p class="textarea-hint" data-textarea-hint-target="hint">Please write this yourself, humans read it!</p>
 
                 <div class="feed-composer__attach-wrap feed-composer__attach-wrap--expanded" data-composer-target="attachWrap">
                   <label class="feed-composer__attach">

@@ -370,6 +370,9 @@ application.register("streak", StreakController);
 import SubmitOnMetaEnterController from "./submit_on_meta_enter_controller";
 application.register("submit-on-meta-enter", SubmitOnMetaEnterController);
 
+import TextareaHintController from "./textarea_hint_controller";
+application.register("textarea-hint", TextareaHintController);
+
 import Tilt3dController from "./tilt_3d_controller";
 application.register("tilt-3d", Tilt3dController);
 
