@@ -1,5 +1,32 @@
 require "test_helper"
 
+# == Schema Information
+#
+# Table name: shop_suggestions
+#
+#  id               :bigint           not null, primary key
+#  aasm_state       :string           default("pending"), not null
+#  description      :text
+#  discarded_at     :datetime
+#  name             :text
+#  rejection_reason :string
+#  url              :string
+#  usd_cost         :decimal(8, 2)
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#  shop_item_id     :bigint
+#  user_id          :bigint           not null
+#
+# Indexes
+#
+#  index_shop_suggestions_on_aasm_state    (aasm_state)
+#  index_shop_suggestions_on_shop_item_id  (shop_item_id)
+#  index_shop_suggestions_on_user_id       (user_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (user_id => users.id)
+#
 class ShopSuggestionTest < ActiveSupport::TestCase
   setup do
     @user = users(:one)
