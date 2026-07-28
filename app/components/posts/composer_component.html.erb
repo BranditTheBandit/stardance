@@ -42,7 +42,7 @@
         <div class="feed-composer__main" data-markdown-preview-target="writePanel">
           <%= image_tag current_user.avatar, alt: "", class: "feed-composer__avatar" %>
 
-          <div class="feed-composer__field">
+          <div class="feed-composer__field" data-controller="textarea-hint">
             <%= f.label :body, body_label, class: "feed-composer__label" %>
             <%= f.text_area :body,
                   class: "feed-composer__textarea-field",
@@ -61,7 +61,8 @@
                  aria-label="<%= body_label %>"
                  data-placeholder="<%= placeholder %>"
                  data-emoji-picker-target="editor"
-                 data-action="focus->composer#showInfo input->emoji-picker#editorInput blur->composer#collapseIfEmpty blur->emoji-picker#editorBlur keydown->emoji-picker#editorKeydown"></div>
+                 data-action="paste->textarea-hint#paste focus->composer#showInfo input->emoji-picker#editorInput blur->composer#collapseIfEmpty blur->emoji-picker#editorBlur keydown->emoji-picker#editorKeydown"></div>
+            <p class="textarea-hint" data-textarea-hint-target="hint">Please write this yourself, humans read it!</p>
           </div>
         </div>
 
