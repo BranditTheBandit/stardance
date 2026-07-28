@@ -121,6 +121,7 @@ class User < ApplicationRecord
   has_many :reviewed_mission_submissions, class_name: "Mission::Submission",
            foreign_key: :reviewed_by_id, dependent: :nullify
   has_many :shop_suggestions, dependent: :destroy
+  has_many :shop_suggestion_votes, dependent: :destroy
   has_many :shop_wishlists, dependent: :destroy
   has_many :wishlisted_shop_items, through: :shop_wishlists, source: :shop_item
   has_many :sold_items, class_name: "ShopItem::HackClubberItem", foreign_key: :user_id
