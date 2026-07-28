@@ -33,7 +33,7 @@
       <span class="suggestion-card__by">by <%= suggestion.user.display_name %></span>
     </div>
 
-    <p class="suggestion-card__description"><%= suggestion.description.truncate(120) %></p>
+    <p class="suggestion-card__description"><%= suggestion.description %></p>
 
     <% if suggestion.rejected? && suggestion.rejection_reason.present? %>
       <p class="suggestion-card__rejection-reason">
