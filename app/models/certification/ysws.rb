@@ -44,6 +44,8 @@ module Certification
   class Ysws < ApplicationRecord
     self.table_name = "certification_ysws_reviews"
 
+    has_paper_trail
+
     belongs_to :reviewer, class_name: "User", optional: true
     belongs_to :user
     belongs_to :project, -> { with_deleted }, optional: true
@@ -53,6 +55,10 @@ module Certification
     belongs_to :claimed_by, class_name: "User", optional: true
 
     has_many :devlog_reviews, class_name: "Certification::Devlog", foreign_key: :ysws_review_id, dependent: :destroy
+
+    # An integrity check hangs off the ship event (one per ship event), so a
+    # review maps 1-1 to one through its own ship event.
+    has_one :integrity_check, through: :post_ship_event, source: :integrity_check
 
     validates :original_minutes, numericality: { greater_than_or_equal_to: 0 }, allow_nil: false
     validates :approved_minutes, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
@@ -70,7 +76,7 @@ module Certification
     # A review is visible to a reviewer if nobody holds an active claim on it,
     # or they're the one holding it.
     scope :unclaimed_or_claimed_by, ->(user) {
-      where("claimed_by_id IS NULL OR claimed_at IS NULL OR claimed_at < :expired OR claimed_by_id = :user_id",
+      where("certification_ysws_reviews.claimed_by_id IS NULL OR certification_ysws_reviews.claimed_at IS NULL OR certification_ysws_reviews.claimed_at < :expired OR certification_ysws_reviews.claimed_by_id = :user_id",
             expired: CLAIM_TTL.ago, user_id: user.id)
     }
 
@@ -87,6 +93,13 @@ module Certification
     # N+1 — read it via #todo_devlog_count.
     scope :with_todo_devlog_count, -> {
       select("certification_ysws_reviews.*", "#{TODO_DEVLOG_COUNT_SQL} AS todo_devlog_count")
+    }
+
+    # Reviews whose ship event already carries a decided integrity check. The
+    # queue defaults to this — a review can't be completed without one, and a
+    # still-pending integrity check isn't decided yet.
+    scope :with_integrity_check, -> {
+      joins(:integrity_check).where.not(certification_integrities: { status: :pending })
     }
 
     scope :by_project_type, ->(type) {
@@ -115,53 +128,93 @@ module Certification
       self[:todo_devlog_count].to_i
     end
 
-    # Estimated stardust a reviewer would earn per reviewed devlog. YSWS
-    # reviewing isn't a real payout source yet (no stardust_earned column), so
-    # the dashboard leaderboard uses this to show a projected payout.
-    STARDUST_PER_DEVLOG = 0.2
-
     # Default per-reviewer target for completed devlog reviews. Shown as a
     # "reviews left until goal reached" widget on the review queue.
     DEFAULT_DEVLOG_REVIEW_GOAL = 222
 
-    # Limited-time bonus rate: devlogs whose parent review was completed within
-    # BONUS_WINDOW pay out at this higher rate instead of STARDUST_PER_DEVLOG.
-    BONUS_STARDUST_PER_DEVLOG = 0.3
+    # Projected stardust per reviewed devlog, tiered by the reviewer's running
+    # devlog-review count: a reviewer's Nth devlog pays the rate for the tier N
+    # falls in. YSWS reviewing isn't a real payout source yet (no
+    # stardust_earned column), so this drives the dashboard leaderboard's
+    # projected payout only.
+    #
+    # Each entry is [threshold, rate]: devlogs *after* `threshold` (up to the
+    # next threshold) pay `rate`.
+    #   1..900     => 0.2
+    #   901..1500  => 0.3
+    #   1501..2100 => 0.35
+    #   2101..     => 0.4
+    DEVLOG_STARDUST_TIERS = [
+      [ 0,    0.2  ],
+      [ 900,  0.3  ],
+      [ 1500, 0.35 ],
+      [ 2100, 0.4  ]
+    ].freeze
 
-    # 11am EDT July 9 2026 → 4pm EDT July 13 2026 (uses the New York zone so the
-    # EDT offset is applied correctly regardless of the app's default zone).
-    BONUS_WINDOW = Time.find_zone!("America/New_York").local(2026, 7, 9, 11, 0)..
-      Time.find_zone!("America/New_York").local(2026, 7, 13, 16, 0)
+    # Limited-time bonuses. Each entry is [window, extra_per_devlog]: devlogs
+    # whose parent review completed within `window` earn that much extra
+    # stardust *on top of* their tier rate (additive, so a reviewer never loses
+    # their higher tier rate for reviewing during a window). Windows are
+    # non-overlapping; the New York zone is used so EDT offsets apply correctly
+    # regardless of the app's default zone.
+    BONUS_WINDOWS = [
+      # 11am EDT July 9 2026 → 4pm EDT July 13 2026.
+      [ Time.find_zone!("America/New_York").local(2026, 7, 9, 11, 0)..
+        Time.find_zone!("America/New_York").local(2026, 7, 13, 16, 0), 0.1 ],
+      # 4:15pm EDT July 24 2026 → 4:15pm EDT July 27 2026 (Mon).
+      [ Time.find_zone!("America/New_York").local(2026, 7, 24, 16, 15)..
+        Time.find_zone!("America/New_York").local(2026, 7, 27, 16, 15), 0.05 ]
+    ].freeze
+
+    # SQL expression yielding the per-devlog bonus stardust for a review, based
+    # on which BONUS_WINDOWS entry (if any) its reviewed_at falls in.
+    def self.bonus_stardust_case_sql
+      whens = BONUS_WINDOWS.map do |window, per_devlog|
+        sanitize_sql_array([
+          "WHEN certification_ysws_reviews.reviewed_at BETWEEN ? AND ? THEN ?",
+          window.begin, window.end, per_devlog
+        ])
+      end
+      "CASE #{whens.join(' ')} ELSE 0 END"
+    end
+
+    # Projected stardust for a reviewer who has completed `count` devlog
+    # reviews, applying DEVLOG_STARDUST_TIERS cumulatively across the tiers.
+    def self.stardust_for_devlog_count(count)
+      DEVLOG_STARDUST_TIERS.each_with_index.sum do |(threshold, rate), i|
+        upper   = DEVLOG_STARDUST_TIERS[i + 1]&.first || Float::INFINITY
+        in_tier = [ count, upper ].min - threshold
+        in_tier.positive? ? in_tier * rate : 0
+      end.round(2)
+    end
 
     # All-time devlog-review leaderboard. A devlog counts as reviewed once its
     # parent YSWS review is completed (reviewed_at present); completion already
-    # forces every child devlog out of :pending. Devlogs reviewed within
-    # BONUS_WINDOW pay out at the higher BONUS_STARDUST_PER_DEVLOG rate.
+    # forces every child devlog out of :pending. Projected stardust scales with
+    # each reviewer's total via the DEVLOG_STARDUST_TIERS rate tiers, plus the
+    # per-devlog bonus for any devlogs reviewed within a BONUS_WINDOWS window.
     #   => [{ reviewer_id:, name:, devlogs:, stardust: }, ...] desc by devlogs
     def self.reviewer_devlog_leaderboard
-      bonus_sql = sanitize_sql_array([
-        "certification_ysws_reviews.reviewed_at BETWEEN ? AND ?",
-        BONUS_WINDOW.begin, BONUS_WINDOW.end
-      ])
+      bonus_case = bonus_stardust_case_sql
 
-      # Count devlogs per reviewer, split by whether they fall in the bonus
-      # window, so each bucket can be paid out at its own rate.
+      # Count devlogs per reviewer, split by their per-devlog bonus amount, so
+      # tier rates apply to the total while each bonus applies only to the
+      # devlogs reviewed in its window.
       Certification::Devlog
         .joins(ysws_review: :reviewer)
         .where.not(certification_ysws_reviews: { reviewed_at: nil })
-        .group("users.id", "users.display_name", Arel.sql("(#{bonus_sql})"))
+        .group("users.id", "users.display_name", Arel.sql(bonus_case))
         .count
         .group_by { |(reviewer_id, name, _bonus), _count| [ reviewer_id, name ] }
         .map do |(reviewer_id, name), entries|
-          devlogs  = entries.sum { |_key, count| count }
-          stardust = entries.sum do |(_id, _name, bonus), count|
-            count * (bonus ? BONUS_STARDUST_PER_DEVLOG : STARDUST_PER_DEVLOG)
-          end
+          devlogs        = entries.sum { |_key, count| count }
+          bonus_stardust = entries.sum { |(_id, _name, bonus), count| bonus.to_f * count }
+          stardust       = (stardust_for_devlog_count(devlogs) + bonus_stardust).round(2)
           {
             reviewer_id: reviewer_id,
             name: name,
             devlogs: devlogs,
-            stardust: stardust.round(1)
+            stardust: stardust
           }
         end
         .sort_by { |row| [ -row[:devlogs], row[:name] ] }
@@ -214,6 +267,12 @@ module Certification
 
     def claimed_by?(user)
       claim_active? && claimed_by_id == user.id
+    end
+
+    def release_claim!
+      return false unless pending? && claim_active?
+
+      update!(claimed_by: nil, claimed_at: nil)
     end
 
     def approved_minutes_total

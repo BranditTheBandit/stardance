@@ -84,6 +84,22 @@ class Project < ApplicationRecord
       })
       .distinct
   }
+  scope :needs_language_sync, -> {
+    where.not(repo_url: [ nil, "" ])
+      .left_joins(:project_language)
+      .where(
+        "project_languages.id IS NULL OR " \
+        "project_languages.status IN (?) OR " \
+        "(project_languages.status = ? AND project_languages.last_synced_at < ?)",
+        [ ProjectLanguage.statuses[:pending], ProjectLanguage.statuses[:failed] ],
+        ProjectLanguage.statuses[:synced],
+        1.day.ago
+      )
+      .order(
+        Arel.sql("CASE WHEN project_languages.id IS NULL THEN 0 ELSE 1 END"),
+        Arel.sql("project_languages.last_synced_at ASC NULLS FIRST")
+      )
+  }
   scope :with_banner_priority, -> {
     left_joins(:banner_attachment)
       .includes(banner_attachment: :blob)
@@ -111,6 +127,8 @@ class Project < ApplicationRecord
   has_many :skips, class_name: "Project::Skip", dependent: :destroy
   has_many :project_follows, dependent: :destroy
   has_many :followers, through: :project_follows, source: :user
+
+  has_one :project_language, dependent: :destroy
 
   has_many :mission_attachments,      class_name: "Project::MissionAttachment",  dependent: :destroy, inverse_of: :project
   has_many :missions,                 through:    :mission_attachments
@@ -318,7 +336,34 @@ class Project < ApplicationRecord
       errors.add(:base, "Cannot delete a project that has been shipped")
       raise ActiveRecord::RecordInvalid.new(self)
     end
-    update!(deleted_at: Time.current)
+
+    transaction do
+      now = Time.current
+      update!(deleted_at: now)
+
+      devlogs.find_each { |d| d.update_columns(deleted_at: now) }
+
+      Post::Repost.unscoped.where(original_post_id: posts.pluck(:id)).find_each do |repost|
+        repost.update_columns(deleted_at: now)
+      end
+    end
+  end
+
+  def restore!
+    transaction do
+      deleted_at_was = deleted_at
+      update!(deleted_at: nil)
+
+      Post::Devlog.unscoped.where(deleted_at: deleted_at_was)
+                  .where(id: posts.of_devlogs.pluck(:postable_id))
+                  .update_all(deleted_at: nil)
+
+      repost_ids = Post::Repost.unscoped.where(deleted_at: deleted_at_was)
+                               .where(original_post_id: posts.pluck(:id))
+                               .pluck(:id)
+
+      Post::Repost.unscoped.where(id: repost_ids).update_all(deleted_at: nil)
+    end
   end
 
   def shipped?

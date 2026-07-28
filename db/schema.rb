@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_08_183407) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_24_223107) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -206,6 +206,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_183407) do
   end
 
   create_table "certification_integrities", force: :cascade do |t|
+    t.datetime "claimed_at"
+    t.bigint "claimed_by_id"
     t.datetime "created_at", null: false
     t.text "decision_justification"
     t.integer "deduction_minutes"
@@ -216,12 +218,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_183407) do
     t.bigint "ship_event_id", null: false
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
+    t.index ["claimed_by_id"], name: "index_certification_integrities_on_claimed_by_id"
     t.index ["reviewer_id"], name: "index_certification_integrities_on_reviewer_id"
     t.index ["ship_event_id"], name: "index_certification_integrities_on_ship_event_id", unique: true
     t.index ["status"], name: "index_certification_integrities_on_status"
   end
 
   create_table "certification_ship_reviews", force: :cascade do |t|
+    t.float "bonus_stardust"
     t.datetime "claim_expires_at"
     t.datetime "claimed_at"
     t.datetime "created_at", null: false
@@ -564,6 +568,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_183407) do
     t.datetime "deleted_at"
     t.bigint "mission_id", null: false
     t.string "payout_path", null: false
+    t.datetime "pending_at"
     t.text "rejection_message"
     t.datetime "reviewed_at"
     t.bigint "reviewed_by_id"
@@ -583,6 +588,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_183407) do
     t.index ["shop_order_id"], name: "index_mission_submissions_with_shop_order", where: "(shop_order_id IS NOT NULL)"
     t.index ["status", "claim_expires_at"], name: "idx_mission_submissions_on_status_claim_expires"
     t.index ["status", "created_at"], name: "index_mission_submissions_on_status_and_created_at"
+    t.index ["status", "pending_at"], name: "index_mission_submissions_on_status_and_pending_at"
   end
 
   create_table "missions", force: :cascade do |t|
@@ -755,6 +761,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_183407) do
     t.index ["project_id"], name: "index_project_follows_on_project_id"
     t.index ["user_id", "project_id"], name: "index_project_follows_on_user_id_and_project_id", unique: true
     t.index ["user_id"], name: "index_project_follows_on_user_id"
+  end
+
+  create_table "project_languages", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.jsonb "language_stats"
+    t.datetime "last_synced_at"
+    t.bigint "project_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["language_stats"], name: "index_project_languages_on_language_stats", using: :gin
+    t.index ["last_synced_at"], name: "index_project_languages_on_last_synced_at"
+    t.index ["project_id"], name: "index_project_languages_on_project_id_unique", unique: true
+    t.index ["status"], name: "index_project_languages_on_status"
   end
 
   create_table "project_memberships", force: :cascade do |t|
@@ -1544,6 +1564,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_183407) do
     t.index ["user_id"], name: "index_votes_on_user_id"
   end
 
+  create_table "workshop_attendances", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.bigint "workshop_id", null: false
+    t.index ["user_id"], name: "index_workshop_attendances_on_user_id"
+    t.index ["workshop_id", "user_id"], name: "index_workshop_attendances_on_workshop_id_and_user_id", unique: true
+  end
+
+  create_table "workshop_rsvps", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.bigint "workshop_id", null: false
+    t.index ["user_id"], name: "index_workshop_rsvps_on_user_id"
+    t.index ["workshop_id", "user_id"], name: "index_workshop_rsvps_on_workshop_id_and_user_id", unique: true
+  end
+
+  create_table "workshops", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.datetime "ends_at", null: false
+    t.datetime "rsvps_notified_at"
+    t.datetime "starts_at", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.string "zoom_link"
+    t.index ["starts_at"], name: "index_workshops_on_starts_at"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "certificates", "users"
@@ -1553,6 +1603,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_183407) do
   add_foreign_key "certification_funding_requests", "users"
   add_foreign_key "certification_funding_requests", "users", column: "reviewer_id"
   add_foreign_key "certification_integrities", "post_ship_events", column: "ship_event_id"
+  add_foreign_key "certification_integrities", "users", column: "claimed_by_id"
   add_foreign_key "certification_integrities", "users", column: "reviewer_id"
   add_foreign_key "certification_ship_reviews", "post_ship_events", on_delete: :nullify
   add_foreign_key "certification_ship_reviews", "projects"
@@ -1611,6 +1662,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_183407) do
   add_foreign_key "posts", "users"
   add_foreign_key "project_follows", "projects"
   add_foreign_key "project_follows", "users"
+  add_foreign_key "project_languages", "projects"
   add_foreign_key "project_memberships", "projects"
   add_foreign_key "project_memberships", "users"
   add_foreign_key "project_mission_attachments", "missions"
@@ -1687,4 +1739,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_183407) do
   add_foreign_key "votes", "post_ship_events", column: "ship_event_id"
   add_foreign_key "votes", "projects"
   add_foreign_key "votes", "users"
+  add_foreign_key "workshop_attendances", "users"
+  add_foreign_key "workshop_attendances", "workshops"
+  add_foreign_key "workshop_rsvps", "users"
+  add_foreign_key "workshop_rsvps", "workshops"
 end

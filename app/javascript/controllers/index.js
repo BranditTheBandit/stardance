@@ -82,6 +82,12 @@ application.register(
   Certification__Ysws__DevlogTimeChartController,
 );
 
+import Certification__Ysws__DoubleDipController from "./certification/ysws/double_dip_controller";
+application.register(
+  "certification--ysws--double-dip",
+  Certification__Ysws__DoubleDipController,
+);
+
 import Certification__Ysws__FraudReportController from "./certification/ysws/fraud_report_controller";
 application.register(
   "certification--ysws--fraud-report",
@@ -120,9 +126,6 @@ application.register(
 
 import CommandPaletteController from "./command_palette_controller";
 application.register("command-palette", CommandPaletteController);
-
-import CommentModalController from "./comment_modal_controller";
-application.register("comment-modal", CommentModalController);
 
 import ComposerController from "./composer_controller";
 application.register("composer", ComposerController);
@@ -223,6 +226,9 @@ application.register("lookout-recorder", LookoutRecorderController);
 import MarkdownPreviewController from "./markdown_preview_controller";
 application.register("markdown-preview", MarkdownPreviewController);
 
+import MediaCarouselController from "./media_carousel_controller";
+application.register("media-carousel", MediaCarouselController);
+
 import MentionAutocompleteController from "./mention_autocomplete_controller";
 application.register("mention-autocomplete", MentionAutocompleteController);
 
@@ -277,6 +283,9 @@ application.register("payout-review", PayoutReviewController);
 import PostMenuController from "./post_menu_controller";
 application.register("post-menu", PostMenuController);
 
+import PostPanelController from "./post_panel_controller";
+application.register("post-panel", PostPanelController);
+
 import PrizeFloatController from "./prize_float_controller";
 application.register("prize-float", PrizeFloatController);
 
@@ -303,6 +312,9 @@ application.register("project-thumbs-scroll", ProjectThumbsScrollController);
 
 import ProjectTypeController from "./project_type_controller";
 application.register("project-type", ProjectTypeController);
+
+import ReadMoreController from "./read_more_controller";
+application.register("read-more", ReadMoreController);
 
 import ReadmeImageController from "./readme_image_controller";
 application.register("readme-image", ReadmeImageController);
@@ -390,3 +402,6 @@ application.register("what-is-this", WhatIsThisController);
 
 import WordCycleController from "./word_cycle_controller";
 application.register("word-cycle", WordCycleController);
+
+import WorkshopCountdownController from "./workshop_countdown_controller";
+application.register("workshop-countdown", WorkshopCountdownController);

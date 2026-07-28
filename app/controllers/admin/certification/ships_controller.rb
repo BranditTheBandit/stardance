@@ -1,6 +1,6 @@
 class Admin::Certification::ShipsController < Admin::Certification::ApplicationController
   before_action :release_other_claims, only: [ :next ]
-  before_action :set_ship, only: [ :show, :update, :set_project_type, :report_fraud ]
+  before_action :set_ship, only: [ :show, :update, :set_project_type, :set_bonus_stardust, :report_fraud ]
   before_action :set_submitter_context, only: [ :show, :update ]
   before_action :set_body_class, only: [ :index, :show, :update, :logs ]
 
@@ -71,6 +71,10 @@ class Admin::Certification::ShipsController < Admin::Certification::ApplicationC
 
   def show
     authorize @ship
+    if params[:via] == "dashboard"
+      return redirect_to admin_certification_ships_path, alert: "This project has been deleted." if @ship.project.deleted_at?
+      return redirect_to project_path(@ship.project)
+    end
     if internal_sw_dash_reviews_disabled? && (dash_url = ExternalDashboard::Client.certification_url(@ship.external_certification_id))
       return redirect_to dash_url, allow_other_host: true
     end
@@ -111,6 +115,12 @@ class Admin::Certification::ShipsController < Admin::Certification::ApplicationC
     else
       redirect_to ship_redirect_path, alert: "Invalid project type."
     end
+  end
+
+  def set_bonus_stardust
+    authorize @ship
+    @ship.update!(bonus_stardust: params[:bonus_stardust].presence)
+    redirect_to admin_certification_ship_path(@ship), notice: "Bonus stardust updated."
   end
 
   def update
